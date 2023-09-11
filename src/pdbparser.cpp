@@ -11,8 +11,9 @@
 #include "../include/geometry.h"
 #include "../include/constants.h"
 
+namespace fs = std::filesystem;
 
-std::map<char, std::vector<Residue*>> parsePDB(const std::string& filename, bool excludewaters, bool deprotonate) {
+std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool excludewaters, bool deprotonate) {
     std::map<char, std::vector<Residue*>> chainMap;
     std::ifstream pdbFile(filename);
 
@@ -77,7 +78,7 @@ std::map<char, std::vector<Residue*>> parsePDB(const std::string& filename, bool
 
 
 
-void saveToPDB(const std::string& outputFilename, const std::map<char, std::vector<Residue*>>& chainMap) {
+void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<Residue*>>& chainMap) {
     std::ofstream pdbFile(outputFilename);
     //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
     if (!pdbFile.is_open()) {
@@ -128,17 +129,3 @@ void saveToPDB(const std::string& outputFilename, const std::map<char, std::vect
     pdbFile.close();
 }
 
-bool checkParsedPDB(const std::map<char, std::vector<Residue*>>& chainMap)
-{
-    for (const auto& chainEntry : chainMap) {
-        for (const Residue* residue: chainEntry.second) {
-            for (const Atom& atom: residue->atoms) {
-                //check valency, check
-                return true;
-            }
-
-        }
-    }
-    return true;
-
-}

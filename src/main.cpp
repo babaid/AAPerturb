@@ -34,6 +34,10 @@ int main(int argc, char *argv[]) {
             .scan<'d', int>()
             .help("The number of threads to launch at dataset creation.");
 
+    program.add_argument("-N", "--num-variations")
+            .scan<'d', int>()
+            .help("The number of variations of a single protein.");
+
     try {
         program.parse_args(argc, argv);
         }
@@ -73,22 +77,13 @@ int main(int argc, char *argv[]) {
         batch_size = std::stoi(*bsfn);
     }
 
-    std::map<char, std::vector<Residue*>> structure = parsePDB("_data/1nwo.pdb");
-    //std::map<char, std::vector<int>> ifr = findInterfaceResidues(structure);
-    for(Residue* res: structure['A'])
-
+    std::size_t num_variations = 1;
+    if(auto numvar = program.present("-N"))
     {
-        res->atoms[0].coords[0] += 1;
-        std::cout << res->resName <<" "<< res->atoms[0].name << " LINE: "<< res->atoms[0].serial<< std::endl;
+        batch_size = std::stoi(*numvar);
     }
-    saveToPDB("test.pdb", structure);
 
-    std::cout << std::endl;
-    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure);
-    for (auto el: interface_residue_indices['A'])
-    {
-        std::cout << el << std::endl;
-    }
+
 
     createdataset(input_dir, output_dir, batch_size, 5);
 
@@ -109,6 +104,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
     {
         std::string fname = std::to_string(i) + ".pdb";
         std::cout << "The output will be written to " << out/fname << std::endl;
+        fs::path out_path = out/fname;
 
         std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(*structure, interface_residue_indices);
 
@@ -116,7 +112,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
 
         for(std::size_t& resid:res.second) rotateResidueSidechainRandomly(*structure, res.first, resid);
 
-        saveToPDB(out/fname, *structure);
+        saveToPDB(out_path, *structure);
 
         *structure->at(res.first)[res.second[0]] = *ref_residue;
 
@@ -127,17 +123,23 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<fs::path> files = createFileBatches(inputdir, batch_size);
 
 
-    for (auto &filename: files) {
-        //std::vector<std::thread> ThreadVector;
-        std::cout  << "Opening " << filename << std::endl;
-        fs::path filedir{filename.filename()};
-        filedir.replace_extension("");
-        fs::path out = outputdir / filedir;
-        fs::create_directory(out);
-        perturbRun(filename, out, num_variations_per_protein);
-        //T//hreadVector.emplace_back(std::thread([&](){ perturbRun(filename, out, num_variations_per_protein);}));
 
-        //std::for_each(ThreadVector.begin(), ThreadVector.end(), [](std::thread &t){t.join();});
+
+    for (unsigned i=0; i<files.size(); ++i) {
+        std::vector<std::thread> ThreadVector;
+        while((i%batch_size!=0 && i!=0) && i < files.size()) {
+            std::cout << "Opening " << files[i] << std::endl;
+            fs::path filedir{files[i].filename()};
+            filedir.replace_extension("");
+            fs::path out = outputdir / filedir;
+            fs::create_directory(out);
+            //perturbRun(filename, out, num_variations_per_protein);
+            ThreadVector.emplace_back(std::thread([&]() { perturbRun(files[i], out, num_variations_per_protein); }));
+            ++i;
+            //std::for_each(ThreadVector.begin(), ThreadVector.end(), [](std::thread &t){t.join();});
+        }
+        std::for_each(ThreadVector.begin(), ThreadVector.end(), [](std::thread &t){t.join();});
+
     }
 
 }
