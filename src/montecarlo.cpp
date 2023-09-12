@@ -92,4 +92,5 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
             std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
         }
     }
+    delete ref_res;
 }
