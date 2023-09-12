@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 project(AA_Sidechain_Perturbation_CPP)
 
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O2 ")
