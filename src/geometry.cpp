@@ -9,6 +9,7 @@
 #include "pdbparser.h"
 #include "constants.h"
 #include "geometry.h"
+#include "molecules.h"
 
 
 void rotateCoordinatesAroundAxis(std::valarray<double>& vector, const std::valarray<double>& axis, const double angleInDegrees)
@@ -122,7 +123,7 @@ std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::map<cha
                     double distance = calculateDistance(atom1, atom2);
                     distanceMatrix[currentIndex][otherIndex] = distance;
                     // Set diagonal elements to 10
-                    if (currentIndex == otherIndex) {
+                    if (residue1 == refres && atom1 == atom2) {
                         distanceMatrix[currentIndex][otherIndex] = 10;
                     }
                     otherIndex++;

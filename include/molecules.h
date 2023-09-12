@@ -22,7 +22,7 @@ struct Atom {
     std::string name;
     std::string resName;
     std::string element;
-
+    bool operator==(const Atom& at) const;
 };
 
 //A whole residue of atoms in a PDB file
