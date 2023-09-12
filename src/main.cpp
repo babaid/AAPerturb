@@ -93,24 +93,23 @@ int main(int argc, char *argv[]) {
 
 
 
-void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
-{
+void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations) {
 
-    std::map<char, std::vector<Residue*>>* structure = new std::map<char, std::vector<Residue*>>(parsePDB(filename));
+    std::map<char, std::vector<Residue *>> *structure = new std::map<char, std::vector<Residue *>>(parsePDB(filename));
     //std::map<char, std::vector<Residue*>> structure = parsePDB(filename);
     std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(*structure);
 
-    for(unsigned int i =0; i<num_perturbations;++i)
-    {
+    for (unsigned int i = 0; i < num_perturbations; ++i) {
         std::string fname = std::to_string(i) + ".pdb";
-        std::cout << "The output will be written to " << out/fname << std::endl;
-        fs::path out_path = out/fname;
+        std::cout << "The output will be written to " << out / fname << std::endl;
+        fs::path out_path = out / fname;
 
-        std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(*structure, interface_residue_indices);
+        std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(*structure,
+                                                                                     interface_residue_indices);
 
-        Residue* ref_residue = new Residue(*structure->at(res.first)[res.second[0]]);
+        Residue *ref_residue = new Residue(*structure->at(res.first)[res.second[0]]);
 
-        for(std::size_t& resid:res.second) rotateResidueSidechainRandomly(*structure, res.first, resid);
+        for (std::size_t &resid: res.second) rotateResidueSidechainRandomly(*structure, res.first, resid);
 
         saveToPDB(out_path, *structure);
 
@@ -118,8 +117,15 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
         delete ref_residue;
 
     }
-    delete structure;
+    for (const auto &chainEntry: *structure) {
+        for (Residue *residue: chainEntry.second) {
+            delete residue;
+        }
+
+    }
+
 }
+
 
 void createdataset(const std::string inputdir, const std::string outputdir, const std::size_t batch_size, const unsigned int num_variations_per_protein) {
     std::vector<fs::path> files = createFileBatches(inputdir, batch_size);
