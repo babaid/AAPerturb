@@ -86,6 +86,8 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
+                angles = angles/10;
+                std::uniform_real_distribution<double> dist( -angles, angles);
                 continue;
             }
             patience=0;
