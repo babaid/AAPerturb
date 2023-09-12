@@ -49,7 +49,7 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
     unsigned int patience = 0;
     //we do not prefer GLY PRO and ALA. Maybe only for displacement
     if(resName!="GLY" && resName!= "PRO" && resName!= "ALA") {
-        while (rmsd == 0 || patience > 3) {
+        while (rmsd == 0 && patience < 3) {
             for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
                 std::cout << "Rotating around axis: " << axis << std::endl;
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
@@ -78,14 +78,15 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
             auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum));
 
             if (detect_clashes(*distance_matrix, 0.21))  {
-                for (auto row:*distance_matrix)
-                {
-                    for(auto el:row) std::cout<< el << " ";
-                    std::cout << std::endl;
-                }
+                //for (auto row:*distance_matrix)
+                //{
+                //    for(auto el:row) std::cout<< el << " ";
+                //    std::cout << std::endl;
+                //}
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
+                continue;
             }
             patience=0;
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
