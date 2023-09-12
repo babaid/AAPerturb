@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(argparse)
 #FetchContent_MakeAvailable(googletest)
 
 
-add_executable(AA_Sidechain_Perturbation_CPP
+add_executable(aaperturb
         include/geometry.h
         include/pdbparser.h
         include/constants.h
@@ -40,4 +40,4 @@ add_executable(AA_Sidechain_Perturbation_CPP
         src/molecules.cpp
         #test/test.cpp
 )
-target_link_libraries(AA_Sidechain_Perturbation_CPP argparse)
+target_link_libraries(aaperturb argparse)

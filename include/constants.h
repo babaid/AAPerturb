@@ -1,4 +1,6 @@
 //Header that contains the constants
+#ifndef AAPERTURB_CONSTANTS_H
+#define AAPERTURB_CONSTANTS_H
 #include<string>
 #include<vector>
 #include<map>
@@ -65,3 +67,5 @@ namespace amino_acids{
     }
 
 };
+
+#endif

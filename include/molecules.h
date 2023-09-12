@@ -2,8 +2,8 @@
 // Created by babaid on 09.09.23.
 //
 
-#ifndef AA_SIDECHAIN_PERTURBATION_CPP_MOLECULES_H
-#define AA_SIDECHAIN_PERTURBATION_CPP_MOLECULES_H
+#ifndef AAPERTURB__MOLECULES_H
+#define AAPERTURB__MOLECULES_H
 #include<vector>
 #include<string>
 #include<valarray>

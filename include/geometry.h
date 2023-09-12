@@ -1,6 +1,6 @@
 //Header that deals with geometric operations on atoms
-#ifndef GEOMETRY_H
-#define GEOMETRY_H
+#ifndef AAPERTURB_GEOMETRY_H
+#define AAPERTURB_GEOMETRY_H
 #include<string>
 #include<array>
 #include<cmath>

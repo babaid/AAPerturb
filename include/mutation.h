@@ -2,8 +2,8 @@
 // Created by babaid on 09.09.23.
 //
 
-#ifndef AA_SIDECHAIN_PERTURBATION_CPP_MUTATION_H
-#define AA_SIDECHAIN_PERTURBATION_CPP_MUTATION_H
+#ifndef AAPERTURB_MUTATION_H
+#define AAPERTURB__MUTATION_H
 
 #include<map>
 #include<vector>
@@ -14,4 +14,4 @@ void mutateResidue(std::map<char, std::vector<Residue>>& chains, char chain, std
 void renumberAtoms(std::map<char, std::vector<Residue>>& chainMap);
 
 
-#endif //AA_SIDECHAIN_PERTURBATION_CPP_MUTATION_H
+#endif

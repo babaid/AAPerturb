@@ -1,7 +1,7 @@
 //Header for parsing PDB files
 
-#ifndef PDBPARSER_H
-#define PDBPARSER_H
+#ifndef AAPERTURB_PDBPARSER_H
+#define AAPERTURB_PDBPARSER_H
 #include<vector>
 #include<string>
 #include<map>
