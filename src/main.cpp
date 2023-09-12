@@ -115,8 +115,10 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
         saveToPDB(out_path, *structure);
 
         *structure->at(res.first)[res.second[0]] = *ref_residue;
+        delete ref_residue;
 
     }
+    delete structure;
 }
 
 void createdataset(const std::string inputdir, const std::string outputdir, const std::size_t batch_size, const unsigned int num_variations_per_protein) {
