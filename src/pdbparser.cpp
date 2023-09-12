@@ -156,8 +156,15 @@ void saveToPDBWithComments(const fs::path& outputFilename, const std::map<char, 
                 pdbFile << "ATOM  ";
                 pdbFile.width(5);
                 pdbFile << std::right << atom.serial;
-                pdbFile << "  ";
-                pdbFile << std::setw(3) << std::left <<  atom.name;
+                if(atom.name.size() == 4)
+                {
+                    pdbFile << " ";
+                    pdbFile << std::setw(4) << std::left << atom.name;
+                }
+                else {
+                    pdbFile << "  ";
+                    pdbFile << std::setw(3) << std::left << atom.name;
+                }
                 pdbFile << atom.altLoc << atom.resName;
                 pdbFile << " ";
                 pdbFile << chainEntry.first;

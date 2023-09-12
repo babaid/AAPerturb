@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
         batch_size = std::stoi(*bsfn);
     }
 
-    unsigned int num_variations = 10;
+    unsigned int num_variations = 5;
     if(auto numvar = program.present("-N"))
     {
         batch_size = std::stoi(*numvar);
