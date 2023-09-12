@@ -68,6 +68,7 @@ std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool e
                 //newResidue.atom_coords.push_back({atom.x, atom.y, atom.z});
                 chainMap[atom->chainID].push_back(newResidue);
             }
+            delete atom;
         }
     }
 
