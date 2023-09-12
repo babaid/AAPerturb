@@ -24,16 +24,12 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomInterfaceResidue(std::map<
     auto chain = interface_residue_indices.begin();
     std::advance(chain,  dist(rng));
     //Choose random residue on chain
-    std::cout << "Checkpoint" << std::endl;
-    std::size_t nelements = 1; //we want to change one residue for now
+    //std::size_t nelements = 1; //we want to change one residue for now
     std::vector<std::size_t> residues;
-    std::cout << "Checkpoint" << std::endl;
-
     //this somehow kills the program so I will
     //std::sample(chain->second.begin(), chain->second.end(), std::back_inserter(residues), nelements, std::mt19937(std::random_device{}()));
     std::uniform_int_distribution<std::size_t> resdist(0, interface_residue_indices.size()-1);
     residues.emplace_back(resdist(rng));
-    std::cout << "Checkpoint" << std::endl;
     return std::make_pair(chain->first, residues);
 
 }
@@ -80,8 +76,13 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
                     }
             }
             auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum));
-            if (detect_clashes(distance_matrix, 0.0001) && false) {
-
+           
+            if (detect_clashes(distance_matrix, 0.21))  {
+                for (auto row:distance_matrix)
+                {
+                    for(auto el:row) std::cout<< el << " ";
+                    std::cout << std::endl;
+                }
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;

@@ -3,7 +3,7 @@ project(AA_Sidechain_Perturbation_CPP)
 
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O2 ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 23)
 
 include_directories(include)
 
@@ -14,13 +14,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(argparse)
 
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
+#FetchContent_Declare(
+#        googletest
+#        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+#)
 # For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+#set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+#FetchContent_MakeAvailable(googletest)
 
 
 add_executable(AA_Sidechain_Perturbation_CPP
@@ -38,6 +38,6 @@ add_executable(AA_Sidechain_Perturbation_CPP
         src/montecarlo.cpp
         include/molecules.h
         src/molecules.cpp
-        test/test.cpp
+        #test/test.cpp
 )
-target_link_libraries(AA_Sidechain_Perturbation_CPP argparse gtest)
+target_link_libraries(AA_Sidechain_Perturbation_CPP argparse)

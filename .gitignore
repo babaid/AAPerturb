@@ -2,6 +2,8 @@
 *.d
 .idea
 /cmake-build-debug
+_out/
+_temp/
 # Compiled Object files
 *.slo
 *.lo

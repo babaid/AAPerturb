@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
         batch_size = std::stoi(*bsfn);
     }
 
-    std::size_t num_variations = 1;
+    unsigned int num_variations = 10;
     if(auto numvar = program.present("-N"))
     {
         batch_size = std::stoi(*numvar);
@@ -95,29 +95,29 @@ int main(int argc, char *argv[]) {
 
 void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations) {
 
-    std::map<char, std::vector<Residue *>> *structure = new std::map<char, std::vector<Residue *>>(parsePDB(filename));
+    std::map<char, std::vector<Residue *>> structure = parsePDB(filename);
     //std::map<char, std::vector<Residue*>> structure = parsePDB(filename);
-    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(*structure);
+    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure);
 
     for (unsigned int i = 0; i < num_perturbations; ++i) {
         std::string fname = std::to_string(i) + ".pdb";
         std::cout << "The output will be written to " << out / fname << std::endl;
         fs::path out_path = out / fname;
 
-        std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(*structure,
+        std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(structure,
                                                                                      interface_residue_indices);
 
-        Residue *ref_residue = new Residue(*structure->at(res.first)[res.second[0]]);
+        Residue *ref_residue = new Residue(*structure.at(res.first)[res.second[0]]);
 
-        for (std::size_t &resid: res.second) rotateResidueSidechainRandomly(*structure, res.first, resid);
+        for (std::size_t &resid: res.second) rotateResidueSidechainRandomly(structure, res.first, resid);
 
-        saveToPDB(out_path, *structure);
+        saveToPDB(out_path, structure);
 
-        *structure->at(res.first)[res.second[0]] = *ref_residue;
+        *structure.at(res.first)[res.second[0]] = *ref_residue;
         delete ref_residue;
 
     }
-    for (const auto &chainEntry: *structure) {
+    for (const auto &chainEntry: structure) {
         for (Residue *residue: chainEntry.second) {
             delete residue;
         }
