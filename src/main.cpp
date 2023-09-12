@@ -6,17 +6,14 @@
 #include<filesystem>
 #include<array>
 #include<vector>
-#include<random>
 #include<iterator>
 #include<algorithm>
 #include<thread>
-#include<functional>
 #include<format>
 #include<argparse/argparse.hpp>
 #include "../include/pdbparser.h"
 #include "../include/geometry.h"
 #include "../include/montecarlo.h"
-#include "../include/molecules.h"
 #include "../include/io.h"
 namespace fs = std::filesystem;
 
