@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
 void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations) {
 
-    std::map<char, std::vector<Residue *>>* structure = new  std::map<char, std::vector<Residue *>>(parsePDB(filename));
+    std::map<char, std::vector<Residue *>>* structure = parsePDB(filename);
     //std::map<char, std::vector<Residue*>> structure = parsePDB(filename);
     std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(*structure, 9.0);
     for (unsigned int i = 0; i < num_perturbations; ++i) {

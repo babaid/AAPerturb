@@ -13,13 +13,13 @@
 
 namespace fs = std::filesystem;
 
-std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool excludewaters, bool deprotonate) {
+std::map<char, std::vector<Residue*>>* parsePDB(const  fs::path& filename, bool excludewaters, bool deprotonate) {
     std::map<char, std::vector<Residue*>>* chainMap = new std::map<char, std::vector<Residue*>>();
     std::ifstream pdbFile(filename);
 
     if (!pdbFile.is_open()) {
         std::cerr << "Error: Unable to open file " << filename << std::endl;
-        return *chainMap;
+        return chainMap;
     }
 
     std::string line;
@@ -74,7 +74,7 @@ std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool e
 
     pdbFile.close();
 
-    return *chainMap;
+    return chainMap;
 }
 
 
