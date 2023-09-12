@@ -123,7 +123,7 @@ std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::map<cha
                     distanceMatrix[currentIndex][otherIndex] = distance;
                     // Set diagonal elements to 10
                     if (currentIndex == otherIndex) {
-                        distanceMatrix[currentIndex][otherIndex] = std::numeric_limits<double>::infinity();
+                        distanceMatrix[currentIndex][otherIndex] = 10;
                     }
                     otherIndex++;
                 }
