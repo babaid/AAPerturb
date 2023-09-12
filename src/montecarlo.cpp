@@ -80,7 +80,7 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
                     }
             }
             auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum));
-            if (detect_clashes(distance_matrix, 0.0001)) {
+            if (detect_clashes(distance_matrix, 0.0001) && false) {
 
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
