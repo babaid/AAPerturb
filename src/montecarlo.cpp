@@ -85,7 +85,7 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
-                continue;
+                break;
             }
             patience=0;
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
