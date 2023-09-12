@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    createdataset(input_dir, output_dir, batch_size, 5);
+    createdataset(input_dir, output_dir, batch_size, num_variations);
 
 }
 
