@@ -3,6 +3,7 @@ project(AA_Sidechain_Perturbation_CPP)
 
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O2 ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
+set(CMAKE_CXX_STANDARD_REQUIRED  ON)
 set(CMAKE_CXX_STANDARD 23)
 
 include_directories(include)
