@@ -83,7 +83,7 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
             if (detect_clashes(distance_matrix, 0.0001)) {
 
                 std::cout << "Atoms clashed, retrying..." << std::endl;
-                structure.at(chain).at(resNum) = ref_res;
+                *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
                 continue;
             }
