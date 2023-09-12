@@ -40,4 +40,18 @@ add_executable(aaperturb
         src/molecules.cpp
         #test/test.cpp
 )
+
+add_executable(iffind
+        include/geometry.h
+        include/pdbparser.h
+        include/constants.h
+        src/geometry.cpp
+        src/pdbparser.cpp
+        include/io.h
+        src/io.cpp
+        include/molecules.h
+        src/molecules.cpp
+        src/iffind.cpp
+)
+target_link_libraries(iffind argparse)
 target_link_libraries(aaperturb argparse)

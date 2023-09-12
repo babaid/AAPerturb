@@ -26,7 +26,7 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomInterfaceResidue(std::map<
     //Choose random residue on chain
     //std::size_t nelements = 1; //we want to change one residue for now
     std::vector<std::size_t> residues;
-    //this somehow kills the program so I will
+    //this somehow kills the program so I will use something else
     //std::sample(chain->second.begin(), chain->second.end(), std::back_inserter(residues), nelements, std::mt19937(std::random_device{}()));
     std::uniform_int_distribution<std::size_t> resdist(0, interface_residue_indices.size()-1);
     residues.emplace_back(resdist(rng));

@@ -11,6 +11,7 @@
 #include<algorithm>
 #include<thread>
 #include<functional>
+#include<format>
 #include<argparse/argparse.hpp>
 #include "../include/pdbparser.h"
 #include "../include/geometry.h"
@@ -19,11 +20,11 @@
 #include "../include/io.h"
 namespace fs = std::filesystem;
 
-void createdataset(const std::string inputdir, const std::string outputdir, const std::size_t batch_size, const unsigned int num_variations_per_protein);
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein);
 void perturbRun(fs::path filename, fs::path output_dir, unsigned int num_perturbations);
 
 int main(int argc, char *argv[]) {
-    argparse::ArgumentParser program("aasp");
+    argparse::ArgumentParser program("aaperturb");
     program.add_argument("-i", "--input-dir")
             .required()
             .help("The directory containing the input PDB files which we want to perturb randomly.");
@@ -66,7 +67,6 @@ int main(int argc, char *argv[]) {
         {
             std::cout << "The directory provided does not exist. Creating directory " << output_dir << std::endl;
             fs::create_directory(output_dir);
-            std::exit(1);
         }
 
 
@@ -85,8 +85,9 @@ int main(int argc, char *argv[]) {
 
 
 
-    createdataset(input_dir, output_dir, batch_size, num_variations);
+    createdataset(input_dir, output_dir, num_variations);
 
+    return 0;
 }
 
 
@@ -97,8 +98,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
 
     std::map<char, std::vector<Residue *>> structure = parsePDB(filename);
     //std::map<char, std::vector<Residue*>> structure = parsePDB(filename);
-    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure);
-
+    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure, 9.0);
     for (unsigned int i = 0; i < num_perturbations; ++i) {
         std::string fname = std::to_string(i) + ".pdb";
         std::cout << "The output will be written to " << out / fname << std::endl;
@@ -108,10 +108,18 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
                                                                                      interface_residue_indices);
 
         Residue *ref_residue = new Residue(*structure.at(res.first)[res.second[0]]);
+        std::vector<std::string> comments;
 
-        for (std::size_t &resid: res.second) rotateResidueSidechainRandomly(structure, res.first, resid);
+        for (std::size_t &resid: res.second){
+            rotateResidueSidechainRandomly(structure, res.first, resid);
+            std::string comment = std::format("MUTATION: /{}:{}", res.first , std::to_string(resid+1));
+            comments.push_back(comment);
 
-        saveToPDB(out_path, structure);
+        }
+
+
+
+        saveToPDBWithComments(out_path, structure, comments);
 
         *structure.at(res.first)[res.second[0]] = *ref_residue;
         delete ref_residue;
@@ -127,8 +135,8 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
 }
 
 
-void createdataset(const std::string inputdir, const std::string outputdir, const std::size_t batch_size, const unsigned int num_variations_per_protein) {
-    std::vector<fs::path> files = createFileBatches(inputdir, batch_size);
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein) {
+    std::vector<fs::path> files = findInputFiles(inputdir);
 
 
 

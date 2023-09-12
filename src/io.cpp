@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-std::vector<fs::path> createFileBatches(const fs::path& path, const std::size_t& batch_size)
+std::vector<fs::path> findInputFiles(const fs::path& path)
 {
     std::vector<fs::path> input_files;
     for (auto const& file : fs::directory_iterator{path})

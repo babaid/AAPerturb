@@ -23,7 +23,7 @@ double calculateDistance(const Atom& atom1, const Atom& atom2);
 double calculateRMSD(const std::vector<Atom>& atoms1, const std::vector<Atom>& atoms2);
 double norm(const std::valarray<double>&);
 bool areResiduesNeighbors(const Residue*& residue1, const Residue*& residue2, double threshold);
-const std::map<char, std::vector<int>> findInterfaceResidues(const std::map<char, std::vector<Residue*>>& chainMap);
+const std::map<char, std::vector<int>> findInterfaceResidues(const std::map<char, std::vector<Residue*>>& chainMap, double cutoff);
 
 std::valarray<double> crossProduct(const std::valarray<double>& vector1, const std::valarray<double>& vector2);
 #endif

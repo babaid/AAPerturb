@@ -8,6 +8,6 @@
 #include<filesystem>
 namespace fs = std::filesystem;
 
-std::vector<fs::path> createFileBatches(const fs::path& path, const std::size_t& batch_size);
+std::vector<fs::path> findInputFiles(const fs::path& path);
 
 #endif //AA_SIDECHAIN_PERTURBATION_CPP_IO_H

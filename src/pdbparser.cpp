@@ -130,3 +130,61 @@ void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<
     pdbFile.close();
 }
 
+
+void saveToPDBWithComments(const fs::path& outputFilename, const std::map<char, std::vector<Residue*>>& chainMap, std::vector<std::string>& comments) {
+    std::ofstream pdbFile(outputFilename);
+    //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
+    if (!pdbFile.is_open()) {
+        std::cerr << "Error: Unable to open file " << outputFilename << std::endl;
+        return;
+    }
+
+    // Set the formatting for residue.resSeq
+    pdbFile << std::fixed << std::setprecision(0);
+
+    for(const std::string& comment: comments)
+    {
+        pdbFile << "REMARK ";
+        pdbFile.width(3);
+        pdbFile << 999 << " ";
+        pdbFile << comment << std::endl;
+    }
+    // Write the modified atom records
+    for (const auto& chainEntry : chainMap) {
+        for (const Residue* residue : chainEntry.second) {
+            for (const Atom& atom : residue->atoms) {
+                pdbFile << "ATOM  ";
+                pdbFile.width(5);
+                pdbFile << std::right << atom.serial;
+                pdbFile << "  ";
+                pdbFile << std::setw(3) << std::left <<  atom.name;
+                pdbFile << atom.altLoc << atom.resName;
+                pdbFile << " ";
+                pdbFile << chainEntry.first;
+                pdbFile.width(4);
+                pdbFile << std::right << residue->resSeq;
+                //pdbFile << atom.iCode;
+                pdbFile << "    ";
+                pdbFile.width(8);
+                pdbFile.precision(3);
+                pdbFile << std::fixed << atom.coords[0];
+                pdbFile.width(8);
+                pdbFile.precision(3);
+                pdbFile << std::fixed << atom.coords[1];
+                pdbFile.width(8);
+                pdbFile.precision(3);
+                pdbFile << std::fixed << atom.coords[2];
+                pdbFile.width(6);
+                pdbFile.precision(2);
+                pdbFile << std::fixed << atom.occupancy;
+                pdbFile.width(6);
+                pdbFile.precision(2);
+                pdbFile << std::fixed << atom.tempFactor;
+                pdbFile << "          ";
+                pdbFile << atom.element << std::endl;
+            }
+        }
+    }
+
+    pdbFile.close();
+}

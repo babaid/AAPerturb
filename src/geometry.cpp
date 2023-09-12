@@ -187,7 +187,7 @@ bool areResiduesNeighbors(const Residue*& residue1, const Residue*& residue2, do
     return false;
 }
 
-const std::map<char, std::vector<int>> findInterfaceResidues(const std::map<char, std::vector<Residue*>>& chainMap) {
+const std::map<char, std::vector<int>> findInterfaceResidues(const std::map<char, std::vector<Residue*>>& chainMap, double cutoff) {
     std::map<char, std::vector<int>>  interfaceResidues;
 
     for (const auto& chainEntry1 : chainMap) {
@@ -196,7 +196,7 @@ const std::map<char, std::vector<int>> findInterfaceResidues(const std::map<char
             for (const auto& chainEntry2 : chainMap) {
                 if (chainEntry1.first != chainEntry2.first) {
                     for (const Residue* residue2 : chainEntry2.second) {
-                        if (areResiduesNeighbors(residue1, residue2, 9.0)) {
+                        if (areResiduesNeighbors(residue1, residue2, cutoff)) {
                             // Check if residues are adjacent by comparing residue sequence numbers
                                 interfaceResidues[chainEntry1.first].emplace_back(residue1->resSeq);
                                 //interfaceResidues.push_back(residue1.resSeq);
