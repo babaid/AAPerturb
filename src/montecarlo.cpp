@@ -77,8 +77,8 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
             }
             auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum));
 
-            if (detect_clashes(distance_matrix, 0.21))  {
-                for (auto row:distance_matrix)
+            if (detect_clashes(*distance_matrix, 0.21))  {
+                for (auto row:*distance_matrix)
                 {
                     for(auto el:row) std::cout<< el << " ";
                     std::cout << std::endl;
@@ -86,11 +86,12 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
-                break;
             }
             patience=0;
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
             std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
+            delete distance_matrix;
+
         }
     }
     delete ref_res;

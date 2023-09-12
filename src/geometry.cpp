@@ -100,7 +100,7 @@ std::vector<std::vector<double>> calculateDistanceMatrix(const std::map<char, st
     return distanceMatrix;
 }
 
-std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::map<char, std::vector<Residue*>>& chainMap, const Residue* refres)
+std::vector<std::vector<double>>* calculateLocalDistanceMatrix(const std::map<char, std::vector<Residue*>>& chainMap, const Residue* refres)
 {
     int numAtoms = 0;
 
@@ -110,7 +110,7 @@ std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::map<cha
             numAtoms += residue->atoms.size();
         }
     }
-    std::vector<std::vector<double>> distanceMatrix(numAtoms, std::vector<double>(refres->atoms.size(), 0.0));
+    std::vector<std::vector<double>>* distanceMatrix = new std::vector<std::vector<double>>(numAtoms, std::vector<double>(refres->atoms.size(), 0.0));
 
     int currentIndex = 0;
 
@@ -121,10 +121,10 @@ std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::map<cha
                 int otherIndex = 0;
                 for (const Atom& atom2: refres->atoms) {
                     double distance = calculateDistance(atom1, atom2);
-                    distanceMatrix[currentIndex][otherIndex] = distance;
+                    (*distanceMatrix)[currentIndex][otherIndex] = distance;
                     // Set diagonal elements to 10
                     if (residue1 == refres && atom1 == atom2) {
-                        distanceMatrix[currentIndex][otherIndex] = 10;
+                        (*distanceMatrix)[currentIndex][otherIndex] = 10;
                     }
                     otherIndex++;
                 }
