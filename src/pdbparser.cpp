@@ -14,12 +14,12 @@
 namespace fs = std::filesystem;
 
 std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool excludewaters, bool deprotonate) {
-    std::map<char, std::vector<Residue*>> chainMap;
+    std::map<char, std::vector<Residue*>>* chainMap = new std::map<char, std::vector<Residue*>>();
     std::ifstream pdbFile(filename);
 
     if (!pdbFile.is_open()) {
         std::cerr << "Error: Unable to open file " << filename << std::endl;
-        return chainMap;
+        return *chainMap;
     }
 
     std::string line;
@@ -42,13 +42,13 @@ std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool e
             atom->name.erase(std::remove_if(atom->name.begin(), atom->name.end(), ::isspace), atom->name.end());
 
             // Check if this chain is already in the map
-            if (chainMap.find(atom->chainID) == chainMap.end()) {
-                chainMap[atom->chainID] = std::vector<Residue*>();
+            if (chainMap->find(atom->chainID) == chainMap->end()) {
+                (*chainMap)[atom->chainID] = std::vector<Residue*>();
             }
 
             // Check if this residue is already in the chain's residues
             bool found = false;
-            for (Residue* residue : chainMap[atom->chainID]) {
+            for (Residue* residue : (*chainMap)[atom->chainID]) {
                 if (residue->resSeq == atom->resSeq && residue->resName == atom->resName) {
                     if(atom->element == "H" && deprotonate) continue;
                     else residue->atoms.push_back(*atom);
@@ -66,7 +66,7 @@ std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool e
                 if(atom->element == "H" && deprotonate) continue;
                 else newResidue->atoms.push_back(*atom);
                 //newResidue.atom_coords.push_back({atom.x, atom.y, atom.z});
-                chainMap[atom->chainID].push_back(newResidue);
+                (*chainMap)[atom->chainID].push_back(newResidue);
             }
             delete atom;
         }
@@ -74,7 +74,7 @@ std::map<char, std::vector<Residue*>> parsePDB(const  fs::path& filename, bool e
 
     pdbFile.close();
 
-    return chainMap;
+    return *chainMap;
 }
 
 

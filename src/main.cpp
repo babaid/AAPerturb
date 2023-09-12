@@ -74,32 +74,32 @@ int main(int argc, char *argv[]) {
 
 void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations) {
 
-    std::map<char, std::vector<Residue *>> structure = parsePDB(filename);
+    std::map<char, std::vector<Residue *>>* structure = new  std::map<char, std::vector<Residue *>>(parsePDB(filename));
     //std::map<char, std::vector<Residue*>> structure = parsePDB(filename);
-    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure, 9.0);
+    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(*structure, 9.0);
     for (unsigned int i = 0; i < num_perturbations; ++i) {
         std::string fname = std::to_string(i) + ".pdb";
         std::cout << "The output will be written to " << out / fname << std::endl;
         fs::path out_path = out / fname;
 
         if (!fs::exists(out_path)) {
-            std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(structure,
+            std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(*structure,
                                                                                          interface_residue_indices);
 
-            Residue *ref_residue = new Residue(*structure.at(res.first)[res.second[0]]);
+            Residue *ref_residue = new Residue(*structure->at(res.first)[res.second[0]]);
             std::vector<std::string> comments;
 
             for (std::size_t &resid: res.second) {
-                rotateResidueSidechainRandomly(structure, res.first, resid);
+                rotateResidueSidechainRandomly(*structure, res.first, resid);
                 std::string comment = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue->resSeq ));
                 comments.push_back(comment);
 
             }
 
 
-            saveToPDBWithComments(out_path, structure, comments);
+            saveToPDBWithComments(out_path, *structure, comments);
 
-            *structure.at(res.first)[res.second[0]] = *ref_residue;
+            *structure->at(res.first)[res.second[0]] = *ref_residue;
             delete ref_residue;
         }
         else
@@ -109,7 +109,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
 
     }
 
-    for (const auto &chainEntry: structure)
+    for (const auto &chainEntry: *structure)
     {
         for (Residue *residue: chainEntry.second)
         {
@@ -117,6 +117,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
         }
 
     }
+    delete structure;
 
 }
 
