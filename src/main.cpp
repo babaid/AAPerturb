@@ -126,19 +126,16 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
 
     for (unsigned i=0; i<files.size(); ++i) {
-        std::vector<std::thread> ThreadVector;
-        while((i%batch_size!=0 && i!=0) && i < files.size()) {
+
+
             std::cout << "Opening " << files[i] << std::endl;
             fs::path filedir{files[i].filename()};
             filedir.replace_extension("");
             fs::path out = outputdir / filedir;
             fs::create_directory(out);
-            //perturbRun(filename, out, num_variations_per_protein);
-            ThreadVector.emplace_back(std::thread([&]() { perturbRun(files[i], out, num_variations_per_protein); }));
-            ++i;
-            //std::for_each(ThreadVector.begin(), ThreadVector.end(), [](std::thread &t){t.join();});
-        }
-        std::for_each(ThreadVector.begin(), ThreadVector.end(), [](std::thread &t){t.join();});
+            perturbRun(files[i], out, num_variations_per_protein);
+
+
 
     }
 
