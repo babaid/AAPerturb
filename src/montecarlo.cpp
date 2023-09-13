@@ -15,9 +15,6 @@
 
 std::pair<char ,std::vector<std::size_t>> chooseRandomInterfaceResidue(std::map<char, std::vector<Residue*>>& chainMap, const std::map<char, std::vector<int>>& interface_residue_indices)
 {
-    //Find interface residues
-    //std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(chainMap);
-    //Choose a random chain
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::size_t> dist(0, chainMap.size()-1);
@@ -38,7 +35,11 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
 {
     std::random_device dev;
     std::mt19937 rng(dev());
-    double angles = 90;
+    double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
+                        // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
+                        // the greater the angle range gets, the greater should be the clash cutoff
+                        // optionally we could differentiate between types of atoms at clashes, but is it worth it?
+
     std::uniform_real_distribution<double> dist( -angles, angles);
     std::string resName = structure.at(chain).at(resNum)->atoms[0].resName;
     Residue* ref_res = new Residue();
@@ -75,14 +76,9 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
 
                     }
             }
-            auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum));
+            auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum)); //this is a pointer!!!!!
 
             if (detect_clashes(*distance_matrix, 0.21))  {
-                //for (auto row:*distance_matrix)
-                //{
-                //    for(auto el:row) std::cout<< el << " ";
-                //    std::cout << std::endl;
-                //}
                 std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
@@ -91,11 +87,9 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
                 continue;
             }
             else patience=0;
-
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
             std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
             delete distance_matrix;
-
         }
     }
     delete ref_res;
