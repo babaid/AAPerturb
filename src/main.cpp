@@ -86,7 +86,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
     std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(*structure, 9.0);
     for (unsigned int i = 0; i < num_perturbations; ++i) {
         std::string fname = std::to_string(i) + ".pdb";
-        std::cout << "The output will be written to " << out / fname << std::endl;
+        //std::cout << "The output will be written to " << out / fname << std::endl;
         fs::path out_path = out / fname;
 
         if (!fs::exists(out_path)) {
@@ -149,6 +149,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             }
             for(auto& t:ThreadVector) t.join();
             ThreadVector.clear();
+            std::cout << "Batch " << static_cast<int>(i/batch_size) <<  " is done." << std::endl;
 
     }
 

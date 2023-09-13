@@ -47,14 +47,14 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
     Residue* ref_res = new Residue();
     *ref_res = *structure.at(chain).at(resNum);
     //Residue ref_res(structure->at(chain).at(resNum));
-    std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
+    //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
     double rmsd{0};
     unsigned int patience = 0;
     //we do not prefer GLY PRO and ALA. Maybe only for displacement
     if(resName!="GLY" && resName!= "PRO" && resName!= "ALA") {
         while (rmsd == 0 && patience < 3) {
             for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
-                std::cout << "Rotating around axis: " << axis << std::endl;
+                //std::cout << "Rotating around axis: " << axis << std::endl;
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
                 std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
@@ -62,7 +62,7 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
                 std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                         resName).end());
 
-                std::cout << "Rotating atoms" << std::endl;
+                //std::cout << "Rotating atoms" << std::endl;
                 for (const std::string &s: sub_atoms) std::cout << s << " ";
                 std::cout << std::endl;
 
@@ -81,7 +81,7 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
             auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum)); //this is a pointer!!!!!
 
             if (detect_clashes(*distance_matrix, 0.21))  {
-                std::cout << "Atoms clashed, retrying..." << std::endl;
+                //std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
                 angles = angles/10;
@@ -90,7 +90,7 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
             }
             else patience=0;
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
-            std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
+            //std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
             delete distance_matrix;
         }
     }
