@@ -18,7 +18,7 @@
 
 namespace fs = std::filesystem;
 
-void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein);
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int);
 void perturbRun(fs::path filename, fs::path output_dir, unsigned int num_perturbations);
 
 int main(int argc, char *argv[]) {
@@ -29,8 +29,14 @@ int main(int argc, char *argv[]) {
     program.add_argument("-o", "--output-dir")
             .required()
             .help("The directory containing the output PDB which are perturbed randomly.");
+    program.add_argument("-b", "--batch-size")
+            .scan<'d', std::size_t>()
+            .default_value(std::size_t(1))
+            .help("The number of batches for multiprocessing");
+
     program.add_argument("-N", "--num-variations")
             .scan<'d', std::size_t>()
+            .default_value(std::size_t(1))
             .help("The number of variations of a single protein.");
 
     try {
@@ -62,9 +68,10 @@ int main(int argc, char *argv[]) {
             fs::create_directory(output_dir);
         }
     }
-    std::size_t num_variations = 1;
-    num_variations = program.get<std::size_t >("-N");
-    createdataset(input_dir, output_dir, num_variations);
+
+    std::size_t num_variations = program.get<std::size_t >("-N");
+    std::size_t batch_size = program.get<std::size_t>("-b");
+    createdataset(input_dir, output_dir, num_variations, batch_size);
     return 0;
 }
 
@@ -124,24 +131,25 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
 }
 
 
-void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein) {
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size ) {
     std::vector<fs::path> files = findInputFiles(inputdir);
 
 
-
-
-    for (unsigned i=0; i<files.size(); ++i) {
-
-
-            std::cout << "Opening " << files[i] << std::endl;
-            fs::path filedir{files[i].filename()};
-            filedir.replace_extension("");
-            fs::path out = outputdir / filedir;
-            fs::create_directory(out);
-            if(!fs::exists(outputdir/files[i].filename())) fs::copy(files[i], outputdir/files[i].filename());
-            perturbRun(files[i], out, num_variations_per_protein);
-
-
+    for (unsigned int i{0}; i<files.size(); i++) {
+            std::vector<std::thread> ThreadVector;
+            while((i%batch_size != 0 || i==0) && i<files.size()) {
+                std::cout << "Opening " << files[i] << std::endl;
+                fs::path filedir{files[i].filename()};
+                filedir.replace_extension("");
+                fs::path out = outputdir / filedir;
+                fs::create_directory(out);
+                if (!fs::exists(outputdir / files[i].filename())) fs::copy(files[i], outputdir / files[i].filename());
+                ThreadVector.emplace_back(perturbRun, files[i], out, num_variations_per_protein);
+                ++i;
+                //perturbRun(files[i], out, num_variations_per_protein)
+            }
+            for(auto& t:ThreadVector) t.join();
+            ThreadVector.clear();
 
     }
 
