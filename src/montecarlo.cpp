@@ -63,8 +63,8 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
                         resName).end());
 
                 //std::cout << "Rotating atoms" << std::endl;
-                for (const std::string &s: sub_atoms) std::cout << s << " ";
-                std::cout << std::endl;
+                //for (const std::string &s: sub_atoms) std::cout << s << " ";
+                //std::cout << std::endl;
 
                 std::valarray<double> rot_coords = findRotationAxis(structure.at(chain).at(resNum), axis);
 

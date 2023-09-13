@@ -149,7 +149,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             }
             for(auto& t:ThreadVector) t.join();
             ThreadVector.clear();
-            std::cout << "Batch " << static_cast<int>(i/batch_size) <<  " is done." << std::endl;
+            std::cout << "Batch " << static_cast<int>(i/batch_size) <<"/"<< files.size() <<   " is done." << std::endl;
 
     }
 
