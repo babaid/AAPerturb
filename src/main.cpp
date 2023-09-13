@@ -90,9 +90,11 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
             std::vector<std::string> comments;
 
             for (std::size_t &resid: res.second) {
-                rotateResidueSidechainRandomly(*structure, res.first, resid);
-                std::string comment = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue->resSeq ));
-                comments.push_back(comment);
+                double rmsd = rotateResidueSidechainRandomly(*structure, res.first, resid);
+                std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue->resSeq ));
+                std::string comment2 = std::format("RMSD: {}", rmsd);
+                comments.push_back(comment1);
+                comments.push_back(comment2);
 
             }
 

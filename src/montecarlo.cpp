@@ -34,7 +34,7 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomInterfaceResidue(std::map<
 
 }
 
-void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& structure, char chain, std::size_t resNum)
+double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& structure, char chain, std::size_t resNum)
 {
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -99,4 +99,5 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
         }
     }
     delete ref_res;
+    return rmsd;
 }
