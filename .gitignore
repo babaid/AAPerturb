@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
 .idea
+executables/
 /cmake-build-debug
 _out/
 _temp/
