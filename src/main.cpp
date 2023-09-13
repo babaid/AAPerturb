@@ -143,7 +143,6 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                 filedir.replace_extension("");
                 fs::path out = outputdir / filedir;
                 fs::create_directory(out);
-                if (!fs::exists(outputdir / files[i].filename())) fs::copy(files[i], outputdir / files[i].filename());
                 ThreadVector.emplace_back(perturbRun, files[i], out, num_variations_per_protein);
                 ++i;
                 //perturbRun(files[i], out, num_variations_per_protein)
