@@ -136,6 +136,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             filedir.replace_extension("");
             fs::path out = outputdir / filedir;
             fs::create_directory(out);
+            fs::copy(files[i], outputdir/files[i].filename());
             perturbRun(files[i], out, num_variations_per_protein);
 
 
