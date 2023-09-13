@@ -12,8 +12,10 @@
 #include "../include/montecarlo.h"
 #include "../include/constants.h"
 
-
-std::pair<char ,std::vector<std::size_t>> chooseRandomInterfaceResidue(std::map<char, std::vector<Residue*>>& chainMap, const std::map<char, std::vector<int>>& interface_residue_indices)
+/*
+ * This function chooses a random Residue, given a map of possible chains with possible residue indices.
+ */
+std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(std::map<char, std::vector<Residue*>>& chainMap, const std::map<char, std::vector<int>>& interface_residue_indices)
 {
     std::random_device dev;
     std::mt19937 rng(dev());

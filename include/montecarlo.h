@@ -10,7 +10,7 @@
 #include<utility>
 #include "molecules.h"
 
-std::pair<char ,std::vector<std::size_t>> chooseRandomInterfaceResidue(std::map<char, std::vector<Residue*>>& chainMap, const std::map<char, std::vector<int>>&);
+std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(std::map<char, std::vector<Residue*>>& chainMap, const std::map<char, std::vector<int>>&);
 double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& , char , std::size_t );
 
 #endif

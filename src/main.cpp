@@ -90,7 +90,7 @@ void perturbRun(fs::path filename, fs::path out, unsigned int num_perturbations)
         fs::path out_path = out / fname;
 
         if (!fs::exists(out_path)) {
-            std::pair<char, std::vector<std::size_t>> res = chooseRandomInterfaceResidue(*structure,
+            std::pair<char, std::vector<std::size_t>> res = chooseRandomResidue(*structure,
                                                                                          interface_residue_indices);
 
             Residue *ref_residue = new Residue(*structure->at(res.first)[res.second[0]]);
