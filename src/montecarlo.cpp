@@ -90,7 +90,8 @@ void rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& struc
                 std::uniform_real_distribution<double> dist( -angles, angles);
                 continue;
             }
-            patience=0;
+            else patience=0;
+
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
             std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
             delete distance_matrix;
