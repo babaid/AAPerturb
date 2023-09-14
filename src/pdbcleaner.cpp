@@ -9,59 +9,20 @@
 #include<algorithm>
 #include<thread>
 #include<argparse/argparse.hpp>
-#include "../include/pdbparser.h"
-#include "../include/io.h"
+#include "pdbparser.h"
+#include "io.h"
+#include "fancy.h"
 
 
-// https://github.com/GregoryConrad/pBar/tree/master
-class pBar {
-public:
-    pBar(int neededprogress)
-    {
-        neededProgress = neededprogress;
-    }
-    void update() {
-        currentProgress += 1;
-        amountOfFiller = (int)((currentProgress / neededProgress)*(double)pBarLength);
-    }
-    void print() {
-        currUpdateVal %= pBarUpdater.length();
-        std::cout << "\r" //Bring cursor to start of line
-             << firstPartOfpBar; //Print out first part of pBar
-        for (int a = 0; a < amountOfFiller; a++) { //Print out current progress
-            std::cout << pBarFiller;
-        }
-        std::cout << pBarUpdater[currUpdateVal];
-        for (int b = 0; b < pBarLength - amountOfFiller; b++) { //Print out spaces
-            std::cout << " ";
-        }
-        std::cout << lastPartOfpBar //Print out last part of progress bar
-             << " (" << (int)(100*(currentProgress/neededProgress)) << "%)" //This just prints out the percent
-             << std::flush;
-        currUpdateVal += 1;
-    }
-    std::string firstPartOfpBar = "[", //Change these at will (that is why I made them public)
-    lastPartOfpBar = "]",
-            pBarFiller = "|",
-            pBarUpdater = "/-\\|";
-private:
-    int amountOfFiller,
-            pBarLength = 50, //I would recommend NOT changing this
-    currUpdateVal = 0; //Do not change
-    double currentProgress = 0, //Do not change
-    neededProgress; //I would recommend NOT changing this
-};
-
-//////////////////////////7
 
 int main(int argc, char *argv[]) {
     argparse::ArgumentParser program("pdbcleaner");
     program.add_argument("-i", "--input-dir")
             .required()
-            .help("The directory containing the input PDB files which we want to perturb randomly.");
+            .help("The directory containing the input PDB files which we want to clean.");
     program.add_argument("-o", "--output-dir")
             .required()
-            .help("The directory containing the output PDB which are perturbed randomly.");
+            .help("The directory containing the output PDB files which are cleaned.");
 
 
     try {
@@ -96,7 +57,7 @@ int main(int argc, char *argv[]) {
 
 
     auto files = findInputFiles(input_dir);
-    pBar bar(files.size());
+    ProgressBar bar(files.size());
     for (std::size_t i{0}; i<files.size();++i) {
         bar.update();
         if (!fs::exists(output_dir/files[i].filename())) {

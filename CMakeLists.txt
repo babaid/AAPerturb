@@ -40,6 +40,8 @@ add_executable(aaperturb
         include/molecules.h
         src/molecules.cpp
         src/pdbcleaner.cpp
+        include/fancy.h
+        src/fancy.cpp
         #test/test.cpp
 )
 
