@@ -12,6 +12,41 @@
 #include "../include/pdbparser.h"
 #include "../include/io.h"
 
+class pBar {
+public:
+    void update(double newProgress) {
+        currentProgress += newProgress;
+        amountOfFiller = (int)((currentProgress / neededProgress)*(double)pBarLength);
+    }
+    void print() {
+        currUpdateVal %= pBarUpdater.length();
+        std::cout << "\r" //Bring cursor to start of line
+             << firstPartOfpBar; //Print out first part of pBar
+        for (int a = 0; a < amountOfFiller; a++) { //Print out current progress
+            std::cout << pBarFiller;
+        }
+        std::cout << pBarUpdater[currUpdateVal];
+        for (int b = 0; b < pBarLength - amountOfFiller; b++) { //Print out spaces
+            std::cout << " ";
+        }
+        std::cout << lastPartOfpBar //Print out last part of progress bar
+             << " (" << (int)(100*(currentProgress/neededProgress)) << "%)" //This just prints out the percent
+             << std::flush;
+        currUpdateVal += 1;
+    }
+    std::string firstPartOfpBar = "[", //Change these at will (that is why I made them public)
+    lastPartOfpBar = "]",
+            pBarFiller = "|",
+            pBarUpdater = "/-\\|";
+private:
+    int amountOfFiller,
+            pBarLength = 50, //I would recommend NOT changing this
+    currUpdateVal = 0; //Do not change
+    double currentProgress = 0, //Do not change
+    neededProgress = 100; //I would recommend NOT changing this
+};
+
+
 int main(int argc, char *argv[]) {
     argparse::ArgumentParser program("pdbcleaner");
     program.add_argument("-i", "--input-dir")
@@ -52,15 +87,17 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
-
+    pBar bar;
     auto files = findInputFiles(input_dir);
-    for (auto const& file:files) {
-        std::cout << "Cleaning " << file << std::endl;
-        auto clean_structure = parsePDBToBeCleaned(file);
-        std::vector<std::string> comments;
-        comments.push_back("This file was previously reindexed and the waters and the hydrogens were removed");
-        saveToPDBWithComments(output_dir/file.filename(), clean_structure,  comments);
+    for (std::size_t i{0}; i<files.size();++i) {
+        bar.update(100/files.size());
+        if (!fs::exists(output_dir/files[i].filename())) {
+            auto clean_structure = parsePDBToBeCleaned(files[i]);
+            std::vector<std::string> comments;
+            comments.push_back("This file was previously reindexed and the waters and the hydrogens were removed");
+            saveToPDBWithComments(output_dir / files[i].filename(), clean_structure, comments);
+        }
+        bar.print();
     }
     return 0;
 }
