@@ -11,9 +11,9 @@
 
 namespace fs = std::filesystem;
 
-std::map<char, std::vector<Residue*>>*  parsePDB(const fs::path& filename, bool=true, bool=true);
-void  saveToPDB(const fs::path& filename, const std::map<char, std::vector<Residue*>>& chainMap);
-void  saveToPDBWithComments(const fs::path& filename, const std::map<char, std::vector<Residue*>>& chainMap, std::vector<std::string>& comments);
+std::map<char, std::vector<std::unique_ptr<Residue>>>  parsePDB(const fs::path& filename, bool=true, bool=true);
+void  saveToPDB(const fs::path& filename, const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap);
+void  saveToPDBWithComments(const fs::path& filename, const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap, std::vector<std::string>& comments);
 
 
 #endif

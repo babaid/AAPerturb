@@ -15,26 +15,29 @@
 /*
  * This function chooses a random Residue, given a map of possible chains with possible residue indices.
  */
-std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(std::map<char, std::vector<Residue*>>& chainMap, const std::map<char, std::vector<int>>& interface_residue_indices)
+std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<char, std::vector<int>>& interface_residue_indices)
 {
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::size_t> dist(0, chainMap.size()-1);
+    std::uniform_int_distribution<> dist(0, interface_residue_indices.size()-1);
     auto chain = interface_residue_indices.begin();
     std::advance(chain,  dist(rng));
     //Choose random residue on chain
     //std::size_t nelements = 1; //we want to change one residue for now
+    std::random_device dev2;
+    std::mt19937 rng2(dev2());
     std::vector<std::size_t> residues;
     //this somehow kills the program so I will use something else
     //std::sample(chain->second.begin(), chain->second.end(), std::back_inserter(residues), nelements, std::mt19937(std::random_device{}()));
-    std::uniform_int_distribution<std::size_t> resdist(0, interface_residue_indices.size()-1);
-    residues.emplace_back(resdist(rng));
+    std::uniform_int_distribution<> resdist(0, chain->second.size()-1);
+    residues.emplace_back(resdist(rng2));
     return std::make_pair(chain->first, residues);
 
 }
 
-double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& structure, char chain, std::size_t resNum)
+double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr<Residue>>>& structure, char chain, std::size_t resNum)
 {
+    std::cout << "Performing perturbations" << std::endl;
     std::random_device dev;
     std::mt19937 rng(dev());
     double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
@@ -44,7 +47,7 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
 
     std::uniform_real_distribution<double> dist( -angles, angles);
     std::string resName = structure.at(chain).at(resNum)->atoms[0].resName;
-    Residue* ref_res = new Residue();
+    std::unique_ptr<Residue> ref_res = std::make_unique<Residue>(Residue());
     *ref_res = *structure.at(chain).at(resNum);
     //Residue ref_res(structure->at(chain).at(resNum));
     //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
@@ -58,7 +61,7 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
                 std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
-                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index;
+                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index + 1;
                 std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                         resName).end());
 
@@ -80,7 +83,7 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
             }
             auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum)); //this is a pointer!!!!!
 
-            if (detect_clashes(*distance_matrix, 0.21))  {
+            if (detect_clashes(distance_matrix, 0.21))  {
                 //std::cout << "Atoms clashed, retrying..." << std::endl;
                 *structure.at(chain).at(resNum) = *ref_res;
                 patience++;
@@ -91,9 +94,9 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<Residue*>>& str
             else patience=0;
             rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
             //std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
-            delete distance_matrix;
+
         }
     }
-    delete ref_res;
+
     return rmsd;
 }

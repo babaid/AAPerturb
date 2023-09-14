@@ -38,7 +38,7 @@ struct Residue {
 
 
 //A class for later, not used RN but certainly cool
-/*class Protein{
+class Protein{
     private:
         std::map<char, std::vector<Residue>> chains;
         unsigned long numAtoms;
@@ -47,6 +47,6 @@ struct Residue {
         Protein(fs::path);
         Protein(std::string);
 
-    };*/
+    };
 
 #endif //AA_SIDECHAIN_PERTURBATION_CPP_MOLECULES_H

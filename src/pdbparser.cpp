@@ -13,8 +13,11 @@
 
 namespace fs = std::filesystem;
 
-std::map<char, std::vector<Residue*>>* parsePDB(const  fs::path& filename, bool excludewaters, bool deprotonate) {
-    std::map<char, std::vector<Residue*>>* chainMap = new std::map<char, std::vector<Residue*>>();
+std::map<char, std::vector<std::unique_ptr<Residue>>> parsePDB(const  fs::path& filename, bool excludewaters, bool deprotonate) {
+
+    //work in progress
+    std::map<char, std::vector<std::unique_ptr<Residue>>> chainMap;
+
     std::ifstream pdbFile(filename);
 
     if (!pdbFile.is_open()) {
@@ -24,9 +27,12 @@ std::map<char, std::vector<Residue*>>* parsePDB(const  fs::path& filename, bool 
 
     std::string line;
 
+    long long int prevResSeq{-1}, residueCounter{-1};
+
     while (std::getline(pdbFile, line)) {
         if (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters) )  {
-            Atom* atom = new Atom();
+            std::unique_ptr<Atom> atom;
+            atom = std::make_unique<Atom>(Atom());
             atom->serial = std::stoi(line.substr(6, 5));
             atom->name = line.substr(12, 4);
             atom->altLoc = line[16];
@@ -42,13 +48,20 @@ std::map<char, std::vector<Residue*>>* parsePDB(const  fs::path& filename, bool 
             atom->name.erase(std::remove_if(atom->name.begin(), atom->name.end(), ::isspace), atom->name.end());
 
             // Check if this chain is already in the map
-            if (chainMap->find(atom->chainID) == chainMap->end()) {
-                (*chainMap)[atom->chainID] = std::vector<Residue*>();
+            if (chainMap.find(atom->chainID) == chainMap.end()) {
+                chainMap[atom->chainID] = std::vector<std::unique_ptr<Residue>>();
+                prevResSeq = 0;
             }
+
+            if(atom->resSeq != prevResSeq) {
+                residueCounter++;
+            }
+
+            prevResSeq = atom->resSeq;
 
             // Check if this residue is already in the chain's residues
             bool found = false;
-            for (Residue* residue : (*chainMap)[atom->chainID]) {
+            for (auto& residue : chainMap[atom->chainID]) {
                 if (residue->resSeq == atom->resSeq && residue->resName == atom->resName) {
                     if(atom->element == "H" && deprotonate) continue;
                     else residue->atoms.push_back(*atom);
@@ -59,16 +72,17 @@ std::map<char, std::vector<Residue*>>* parsePDB(const  fs::path& filename, bool 
 
             // If the residue doesn't exist, create a new one
             if (!found) {
-                Residue* newResidue = new Residue();
+                std::unique_ptr<Residue> newResidue;
+                newResidue = std::make_unique<Residue>(Residue());
                 newResidue->chainID = atom->chainID;
-                newResidue->resSeq = atom->resSeq;
+                newResidue->resSeq = residueCounter;
                 newResidue->resName = atom->resName;
-                if(atom->element == "H" && deprotonate) continue;
+                if (atom->element == "H" && deprotonate) continue;
                 else newResidue->atoms.push_back(*atom);
                 //newResidue.atom_coords.push_back({atom.x, atom.y, atom.z});
-                (*chainMap)[atom->chainID].push_back(newResidue);
+                chainMap.at(atom->chainID).emplace_back(std::move(newResidue));
+                //(*chainMap)[atom->chainID].push_back(newResidue);
             }
-            delete atom;
         }
     }
 
@@ -79,7 +93,7 @@ std::map<char, std::vector<Residue*>>* parsePDB(const  fs::path& filename, bool 
 
 
 
-void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<Residue*>>& chainMap) {
+void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap) {
     std::ofstream pdbFile(outputFilename);
     //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
     if (!pdbFile.is_open()) {
@@ -92,7 +106,7 @@ void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<
 
     // Write the modified atom records
     for (const auto& chainEntry : chainMap) {
-        for (const Residue* residue : chainEntry.second) {
+        for (auto& residue : chainEntry.second) {
             for (const Atom& atom : residue->atoms) {
                 pdbFile << "ATOM  ";
                 pdbFile.width(5);
@@ -103,7 +117,7 @@ void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<
                 pdbFile << " ";
                 pdbFile << chainEntry.first;
                 pdbFile.width(4);
-                pdbFile << std::right << residue->resSeq;
+                pdbFile << std::right << residue->resSeq+1;
                 //pdbFile << atom.iCode;
                 pdbFile << "    ";
                 pdbFile.width(8);
@@ -131,7 +145,7 @@ void saveToPDB(const fs::path& outputFilename, const std::map<char, std::vector<
 }
 
 
-void saveToPDBWithComments(const fs::path& outputFilename, const std::map<char, std::vector<Residue*>>& chainMap, std::vector<std::string>& comments) {
+void saveToPDBWithComments(const fs::path& outputFilename, const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap, std::vector<std::string>& comments) {
     std::ofstream pdbFile(outputFilename);
     //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
     if (!pdbFile.is_open()) {
@@ -151,7 +165,7 @@ void saveToPDBWithComments(const fs::path& outputFilename, const std::map<char, 
     }
     // Write the modified atom records
     for (const auto& chainEntry : chainMap) {
-        for (const Residue* residue : chainEntry.second) {
+        for (auto& residue : chainEntry.second) {
             for (const Atom& atom : residue->atoms) {
                 pdbFile << "ATOM  ";
                 pdbFile.width(5);
@@ -169,7 +183,7 @@ void saveToPDBWithComments(const fs::path& outputFilename, const std::map<char, 
                 pdbFile << " ";
                 pdbFile << chainEntry.first;
                 pdbFile.width(4);
-                pdbFile << std::right << residue->resSeq;
+                pdbFile << std::right << residue->resSeq+1;
                 //pdbFile << atom.iCode;
                 pdbFile << "    ";
                 pdbFile.width(8);
