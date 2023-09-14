@@ -12,10 +12,16 @@
 #include "../include/pdbparser.h"
 #include "../include/io.h"
 
+
+// https://github.com/GregoryConrad/pBar/tree/master
 class pBar {
 public:
-    void update(double newProgress) {
-        currentProgress += newProgress;
+    pBar(int neededprogress)
+    {
+        neededProgress = neededprogress;
+    }
+    void update() {
+        currentProgress += 1;
         amountOfFiller = (int)((currentProgress / neededProgress)*(double)pBarLength);
     }
     void print() {
@@ -43,9 +49,10 @@ private:
             pBarLength = 50, //I would recommend NOT changing this
     currUpdateVal = 0; //Do not change
     double currentProgress = 0, //Do not change
-    neededProgress = 100; //I would recommend NOT changing this
+    neededProgress; //I would recommend NOT changing this
 };
 
+//////////////////////////7
 
 int main(int argc, char *argv[]) {
     argparse::ArgumentParser program("pdbcleaner");
@@ -87,10 +94,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    pBar bar;
+
     auto files = findInputFiles(input_dir);
+    pBar bar(files.size());
     for (std::size_t i{0}; i<files.size();++i) {
-        bar.update(100/files.size());
+        bar.update();
         if (!fs::exists(output_dir/files[i].filename())) {
             auto clean_structure = parsePDBToBeCleaned(files[i]);
             std::vector<std::string> comments;
