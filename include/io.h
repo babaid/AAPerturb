@@ -8,6 +8,6 @@
 #include<filesystem>
 namespace fs = std::filesystem;
 
-std::vector<fs::path> findInputFiles(const fs::path& path);
+std::vector<fs::path> findInputFiles(const fs::path& path, const std::string extension=  ".pdb");
 
 #endif //AA_SIDECHAIN_PERTURBATION_CPP_IO_H

@@ -53,8 +53,10 @@ int main(int argc, char *argv[]) {
     }
 
 
+
     auto files = findInputFiles(input_dir);
     for (auto const& file:files) {
+        std::cout << "Cleaning " << file << std::endl;
         auto clean_structure = parsePDBToBeCleaned(file);
         std::vector<std::string> comments;
         comments.push_back("This file was previously reindexed and the waters and the hydrogens were removed");

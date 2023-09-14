@@ -11,12 +11,12 @@
 
 namespace fs = std::filesystem;
 
-std::vector<fs::path> findInputFiles(const fs::path& path)
+std::vector<fs::path> findInputFiles(const fs::path& path, const std::string extension)
 {
     std::vector<fs::path> input_files;
     for (auto const& file : fs::directory_iterator{path})
     {
-        if(fs::path(file).extension() == ".pdb")
+        if(fs::path(file).extension() == extension)
         {
             input_files.emplace_back(file);
         }
