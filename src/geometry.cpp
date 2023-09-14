@@ -1,12 +1,7 @@
 #include<cmath>
-#include<array>
 #include<string>
-#include<random>
-#include<algorithm>
 #include<iostream>
 #include<valarray>
-#include<limits>
-#include "pdbparser.h"
 #include "constants.h"
 #include "geometry.h"
 #include "molecules.h"

@@ -97,6 +97,6 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr
 
         }
     }
-
+    std::cout << "Successfull perturbation" << std::endl;
     return rmsd;
 }

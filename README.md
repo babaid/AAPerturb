@@ -64,5 +64,21 @@ or if you want to use the interface residue finder executable:
 make -jN iffind
 ```
 
+### Cleaning of PDB files.
+
+To produce output that is useful, a preprocessing step may be required, which includes removal of waters, deprotonation and residue renumbering.
+This is crucial to the main program, as the less atoms there are the less expensive calculations get, and I use the most simple conversion between residue numbers in the PDB files and residues in my data structures, which is a shift of the indices to start at 0.
+So the residue numbering has to start in each chain at 1. There is a pdbcleaner available, which takes a batch of pdb files and saves their cleaned versions in some predefined directory.
+It also leaves some remarks in the cleaned file, that people who look at it know that it was modified.
+The pdbcleaner program can be built by:
+
+```
+make -jN pdbcleaner
+```
+
+
+
+
+
 
 
