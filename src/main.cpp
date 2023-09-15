@@ -158,7 +158,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
             }
             catch (...)
             {
-                if(verbose)std::cout << "Something was not right..."  << std::endl;
+                if(verbose)std::cout << "Something was not right at "  << filename <<std::endl;
                 continue;
             }
 
