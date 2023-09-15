@@ -29,7 +29,7 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<cha
     std::vector<std::size_t> residues;
     //this somehow kills the program so I will use something else
     //std::sample(chain->second.begin(), chain->second.end(), std::back_inserter(residues), nelements, std::mt19937(std::random_device{}()));
-    std::uniform_int_distribution<> resdist(0, chain->second.size()-1);
+    std::uniform_int_distribution<> resdist(0, chain->second.size()-2);
     residues.emplace_back(chain->second.at(resdist(rng2)));
     return std::make_pair(chain->first, residues);
 
