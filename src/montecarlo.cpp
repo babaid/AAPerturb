@@ -53,27 +53,28 @@ std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vect
 
 }
 
-double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure,  char& chain, std::size_t& resNum, bool verbose)
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure,  char chain, std::size_t& resNum, bool verbose)
 {
 
     if (verbose)
     {
         std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl << "Trying to perturb..." << std::endl;
     }
-    if(structure->at(chain).size() <= resNum)
+    resNum--;
+    /*if(structure->at(chain).size() <= resNum)
     {
         if(verbose)
         {
             std::cout << "This would have been an out of range error but I saved you and your soul. " << std::endl;
             std::cout << "We are going to cheat now: " << std::endl;
         }
-        while(structure->at(chain).size()<= resNum) --resNum;
+        while(structure->at(chain).size() <= resNum) --resNum;
         if (verbose) {
             std::cout << "New target residue (may not be at interface): " << chain << ":" << resNum << std::endl;
             std::cout << "Consider deleting and trying to do another one" << std::endl << "RESERR" << std::endl;
         }
         return 0;
-    }
+    }*/
 
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
@@ -83,16 +84,10 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         // the greater the angle range gets, the greater should be the clash cutoff
                         // optionally we could differentiate between types of atoms at clashes, but is it worth it?
     std::uniform_real_distribution<double> dist( -angles, angles);
-    std::string resName;
-    Residue ref_res;
-    try {
-        std::string resName = structure->at(chain).at(resNum).resName;
-        ref_res = structure->at(chain).at(resNum);
-    }
-    catch (std::out_of_range &orr)
-    {
-        std::cout << "Ehhh " << orr.what() <<std::endl;
-    }
+
+    std::string resName = structure->at(chain).at(resNum).resName;
+    ref_res = structure->at(chain).at(resNum);
+
     //Residue ref_res(structure->at(chain).at(resNum));
     //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
     double rmsd{0};
