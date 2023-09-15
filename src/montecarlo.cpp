@@ -39,7 +39,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
 {
     if (verbose)
     {
-        std::cout << "Size of chain: " <<structure->at(chain).size() << std::endl;
+        std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl;
     }
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -62,7 +62,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
                 std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
-                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index + 1;
+                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index;
 
                 std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                         resName).end());

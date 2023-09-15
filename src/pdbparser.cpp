@@ -125,28 +125,29 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             atom.name.erase(std::remove_if(atom.name.begin(), atom.name.end(), ::isspace), atom.name.end());
             atom.element.erase(std::remove_if(atom.element.begin(), atom.element.end(), ::isspace), atom.element.end());
 
+            //If deprotonate then we skip
             if ((atom.element == "H" && deprotonate)) continue;
+
+            //My head hurts thinking about how many problems this cause me in the previous months.
+            if(atom.altLoc != ' ') continue;
 
             atom.serial = ++atomcntr;
 
             // Check if this chain is already in the map
             if (chainMap->find(atom.chainID) == chainMap->end()) {
                 (*chainMap)[atom.chainID] = std::vector<Residue>();
-
                 residueCounter = -1;
             }
             if (atom.resSeq != prevResSeq) {
                 residueCounter++;
             }
-
             prevResSeq = atom.resSeq;
 
             // Check if this residue is already in the chain's residues
             bool found = false;
             for (auto &residue: chainMap->at(atom.chainID)) {
                 if (residue.resSeq == atom.resSeq && residue.resName == atom.resName) {
-                    if (atom.element == "H" && deprotonate) continue;
-                    else residue.atoms.push_back(std::move(atom));
+                    residue.atoms.push_back(std::move(atom));
                     found = true;
                     break;
                 }
@@ -159,9 +160,8 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
                 newResidue.resSeq = residueCounter;
                 newResidue.resName = atom.resName;
                 newResidue.atoms.emplace_back(std::move(atom));
-                //newResidue.atom_coords.push_back({atom.x, atom.y, atom.z});
                 chainMap->at(atom.chainID).emplace_back(std::move(newResidue));
-                //(*chainMap)[atom.chainID].push_back(newResidue);
+
             }
         }
         }
