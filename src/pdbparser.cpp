@@ -105,9 +105,10 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
     long long int prevResSeq{-1}, residueCounter{-1};
     long long int atomcntr{0};
+    bool parsingAtoms = false;
     while (std::getline(pdbFile, line)) {
         if ((line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters))) {
-
+            parsingAtoms = true;
             Atom atom;
             //atom.serial = std::stoi(line.substr(6, 5));
             atom.name = line.substr(12, 4);
@@ -129,7 +130,9 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             if ((atom.element == "H" && deprotonate)) continue;
 
             //My head hurts thinking about how many problems this cause me in the previous months.
-            if(atom.altLoc != ' ') continue;
+            if(atom.altLoc != ' '){
+                std::cout << "Alternate location: " << atom.altLoc << std::endl;
+            }
 
             atom.serial = ++atomcntr;
 
@@ -164,7 +167,13 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
             }
         }
+        else if (parsingAtoms && (line.compare(0, 3, "TER")==0) || line.compare(0, 6, "ENDMDL") == 0) //Stop parsing if we hit TER or the first ENDMDL
+            //This will keep us from loading unnecessary stuff and alternative models.
+            {
+            break;
         }
+
+    }
 
     pdbFile.close();
 
