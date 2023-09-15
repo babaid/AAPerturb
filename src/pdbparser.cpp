@@ -108,12 +108,11 @@ std::map<char, std::vector<std::unique_ptr<Residue>>> parsePDBToBeCleaned(const 
     long long int prevResSeq{-1}, residueCounter{-1};
     long long int atomcntr{0};
     while (std::getline(pdbFile, line)) {
-        if (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters)) {
-            if ((line.compare(76, 2, "H") && deprotonate)) continue;
+        if ((line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters))) {
+
             std::unique_ptr<Atom> atom;
             atom = std::make_unique<Atom>(Atom());
             //atom->serial = std::stoi(line.substr(6, 5));
-            atom->serial = ++atomcntr;
             atom->name = line.substr(12, 4);
             atom->altLoc = line[16];
             atom->resName = line.substr(17, 3);
@@ -125,8 +124,13 @@ std::map<char, std::vector<std::unique_ptr<Residue>>> parsePDBToBeCleaned(const 
             atom->tempFactor = std::stod(line.substr(60, 6));
             atom->element = line.substr(76, 2);
 
-            // Remove whitespace from the atom name
+            // Remove whitespace from the atom name and element
             atom->name.erase(std::remove_if(atom->name.begin(), atom->name.end(), ::isspace), atom->name.end());
+            atom->element.erase(std::remove_if(atom->element.begin(), atom->element.end(), ::isspace), atom->element.end());
+
+            if ((atom->element == "H" && deprotonate)) continue;
+
+            atom->serial = ++atomcntr;
 
             // Check if this chain is already in the map
             if (chainMap.find(atom->chainID) == chainMap.end()) {
