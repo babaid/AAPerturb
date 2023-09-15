@@ -35,8 +35,12 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<cha
 
 }
 
-double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure, char chain, std::size_t resNum)
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure, char chain, std::size_t resNum, bool verbose)
 {
+    if (verbose)
+    {
+        std::cout << "Size of chain: " <<structure->at(chain).size() << std::endl;
+    }
     std::random_device dev;
     std::mt19937 rng(dev());
     double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
@@ -55,8 +59,6 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
     if(resName!="GLY" && resName!= "PRO" && resName!= "ALA") {
         while (rmsd == 0 && patience < 3) {
             for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
-                //std::cout << "Rotating around axis: " << axis << std::endl;
-
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
                 std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
@@ -64,19 +66,13 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
 
                 std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                         resName).end());
-
-                //std::cout << "Rotating atoms" << std::endl;
-                //for (const std::string &s: sub_atoms) std::cout << s << " ";
-                //std::cout << std::endl;
-
                 std::valarray<double> rot_coords = findRotationAxis(structure->at(chain).at(resNum), axis);
-
                 double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
                 double angle = dist(rng);
 
                 for (Atom& atom: structure->at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
-
+                        if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
                         rotateCoordinatesAroundAxis(atom.coords, rot_coords / vec_norm, angle);
 
                     }
@@ -86,7 +82,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         calculateLocalDistanceMatrix(structure, structure->at(chain).at(resNum));
 
                 if (detect_clashes(distance_matrix, 0.21)) {
-                    //std::cout << "Atoms clashed, retrying..." << std::endl;
+                    if (verbose) std::cout << "Atoms clashed, retrying..." << std::endl;
                     structure->at(chain).at(resNum) = ref_res;
                     patience++;
                     angles = angles / 10;
@@ -94,10 +90,6 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                     continue;
                 } else patience = 0;
                 rmsd = calculateRMSD(ref_res.atoms, structure->at(chain).at(resNum).atoms);
-                //std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
-
-
-
         }
     }
     return rmsd;

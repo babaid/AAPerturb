@@ -149,7 +149,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
                 //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
                 double rmsd = std::numeric_limits<double>::infinity();
                 try {
-                    rmsd = rotateResidueSidechainRandomly(structure, res.first, resid);
+                    rmsd = rotateResidueSidechainRandomly(structure, res.first, resid, verbose);
                 }
                 catch (...)
                 {
