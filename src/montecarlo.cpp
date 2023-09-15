@@ -12,24 +12,31 @@
 #include "../include/montecarlo.h"
 #include "../include/constants.h"
 
+
 /*
  * This function chooses a random Residue, given a map of possible chains with possible residue indices.
  */
 std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vector<int>>& interface_residue_indices)
 {
-
+    //This thread local stuff is something really cool
+    // Need to explain it here, otherwise I forget it.
+    // If using RNGs with the same seed, random out of range errors can occur, as they share their state amongst threads
+    // Using the thread_local keyword they become independent, do not share the state anymore and there is no synchronization required.
+    // An other option is to use global RNGs, but this is a bad idea because race conditions will probably occur,
+    // and you have to use mutexes to synchronize the r.n. generation.
+    thread_local std::random_device thread_dev;
+    thread_local std::mt19937 thread_rng(thread_dev());
     std::size_t resindex = std::numeric_limits<std::size_t>::max();
-    std::random_device dev;
-    std::mt19937 rng(dev());
+
     std::uniform_int_distribution<> dist(0, interface_residue_indices.size() - 1); // for chain selection
     auto chain = interface_residue_indices.begin();
     if (!interface_residue_indices.empty()) {
         while(resindex == std::numeric_limits<std::size_t>::max()) {
             chain = interface_residue_indices.begin();
-            std::advance(chain, dist(rng));
+            std::advance(chain, dist(thread_rng));
             if (chain != interface_residue_indices.end() && !chain->second.empty()) {
                 std::uniform_int_distribution<std::size_t> elementDist(0, chain->second.size() - 1);
-                resindex = chain->second.at(elementDist(rng));
+                resindex = chain->second.at(elementDist(thread_rng));
             }
             else
             {
@@ -46,14 +53,17 @@ std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vect
 
 }
 
-double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure, char chain, std::size_t resNum, bool verbose)
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure, const char chain, const std::size_t resNum, bool verbose)
 {
     if (verbose)
     {
         std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl;
     }
-    std::random_device dev;
-    std::mt19937 rng(dev());
+
+
+    thread_local std::random_device thread_dev;
+    thread_local std::mt19937 thread_rng(thread_dev());
+
     double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
                         // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
                         // the greater the angle range gets, the greater should be the clash cutoff
@@ -79,7 +89,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         resName).end());
                 std::valarray<double> rot_coords = findRotationAxis(structure->at(chain).at(resNum), axis);
                 double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
-                double angle = dist(rng);
+                double angle = dist(thread_rng);
 
                 for (Atom& atom: structure->at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
