@@ -175,8 +175,69 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             }
         }
 
+        if (!parsingFirstModel) {
+            pdbFile.clear(); // Reset the end-of-file flag
+            pdbFile.seekg(0, std::ios::beg); // Rewind to the beginning of the file
+            parsingAtoms = true; // Start parsing atoms from the beginning
 
-    }
+            if (parsingAtoms && (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters)) ) {
+                Atom atom;
+                //atom.serial = std::stoi(line.substr(6, 5));
+                atom.name = line.substr(12, 4);
+                atom.altLoc = line[16];
+                atom.resName = line.substr(17, 3);
+                atom.chainID = line[21];
+                atom.resSeq = std::stoi(line.substr(22, 4)) - 1;
+                atom.coords = {std::stod(line.substr(30, 8)), std::stod(line.substr(38, 8)),
+                               std::stod(line.substr(46, 8))};
+                atom.occupancy = std::stod(line.substr(54, 6));
+                atom.tempFactor = std::stod(line.substr(60, 6));
+                atom.element = line.substr(76, 2);
+
+                // Remove whitespace from the atom name and element
+                atom.name.erase(std::remove_if(atom.name.begin(), atom.name.end(), ::isspace), atom.name.end());
+                atom.element.erase(std::remove_if(atom.element.begin(), atom.element.end(), ::isspace), atom.element.end());
+
+                //If deprotonate then we skip
+                if ((atom.element == "H" && deprotonate)) continue;
+
+                //My head hurts thinking about how many problems this cause me in the previous months.
+
+                atom.serial = ++atomcntr;
+
+                // Check if this chain is already in the map
+                if (chainMap->find(atom.chainID) == chainMap->end()) {
+                    (*chainMap)[atom.chainID] = std::vector<Residue>();
+                    residueCounter = -1;
+                }
+                if (atom.resSeq != prevResSeq) {
+                    residueCounter++;
+                }
+                prevResSeq = atom.resSeq;
+
+                // Check if this residue is already in the chain's residues
+                bool found = false;
+                for (auto &residue: chainMap->at(atom.chainID)) {
+                    if (residue.resSeq == atom.resSeq && residue.resName == atom.resName) {
+                        residue.atoms.push_back(std::move(atom));
+                        found = true;
+                        break;
+                    }
+                }
+
+                // If the residue doesn't exist, create a new one
+                if (!found) {
+                    Residue newResidue;
+                    newResidue.chainID = atom.chainID;
+                    newResidue.resSeq = residueCounter;
+                    newResidue.resName = atom.resName;
+                    newResidue.atoms.emplace_back(std::move(atom));
+                    chainMap->at(atom.chainID).emplace_back(std::move(newResidue));
+
+                }
+            }
+
+        }
 
     pdbFile.close();
 
