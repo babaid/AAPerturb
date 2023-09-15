@@ -60,7 +60,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
     {
         std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl << "Trying to perturb..." << std::endl;
     }
-    if(structure->at(chain).size()<= resNum)
+    if(structure->at(chain).size() <= resNum)
     {
         if(verbose)
         {
@@ -82,10 +82,15 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
                         // the greater the angle range gets, the greater should be the clash cutoff
                         // optionally we could differentiate between types of atoms at clashes, but is it worth it?
-
     std::uniform_real_distribution<double> dist( -angles, angles);
-    std::string resName = structure->at(chain).at(resNum).resName;
-    Residue ref_res(structure->at(chain).at(resNum));
+    try {
+        std::string resName = structure->at(chain).at(resNum).resName;
+        Residue ref_res(structure->at(chain).at(resNum));
+    }
+    catch (std::out_of_range &orr)
+    {
+        std::cout << "Ehhh " << orr.what() <<std::endl;
+    }
     //Residue ref_res(structure->at(chain).at(resNum));
     //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
     double rmsd{0};
