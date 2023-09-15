@@ -53,7 +53,7 @@ std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vect
 
 }
 
-double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure,  char chain, std::size_t& resNum, bool verbose)
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure,  char& chain, std::size_t resNum, bool verbose)
 {
 
     if (verbose)
