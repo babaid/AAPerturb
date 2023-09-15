@@ -31,8 +31,6 @@ add_executable(aaperturb
         src/geometry.cpp
         src/pdbparser.cpp
         src/main.cpp
-        #src/mutation.cpp
-        #include/mutation.h
         include/io.h
         src/io.cpp
         include/montecarlo.h
@@ -41,8 +39,6 @@ add_executable(aaperturb
         src/molecules.cpp
         src/pdbcleaner.cpp
         include/fancy.h
-        src/fancy.cpp
-        #test/test.cpp
 )
 
 add_executable(iffind
