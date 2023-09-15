@@ -30,7 +30,7 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<cha
     //this somehow kills the program so I will use something else
     //std::sample(chain->second.begin(), chain->second.end(), std::back_inserter(residues), nelements, std::mt19937(std::random_device{}()));
     std::uniform_int_distribution<> resdist(0, chain->second.size()-1);
-    residues.emplace_back(resdist(rng2));
+    residues.emplace_back(chain->second.at(resdist(rng2)));
     return std::make_pair(chain->first, residues);
 
 }
@@ -45,7 +45,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         // optionally we could differentiate between types of atoms at clashes, but is it worth it?
 
     std::uniform_real_distribution<double> dist( -angles, angles);
-    std::string resName = structure->at(chain).at(resNum).atoms[0].resName;
+    std::string resName = structure->at(chain).at(resNum).resName;
     Residue ref_res(structure->at(chain).at(resNum));
     //Residue ref_res(structure->at(chain).at(resNum));
     //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
