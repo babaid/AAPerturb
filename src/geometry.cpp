@@ -37,9 +37,9 @@ void rotateCoordinatesAroundAxis(std::valarray<double>& vector, const std::valar
     vector[2] = rotationMatrix[2][0] * oldX + rotationMatrix[2][1] * oldY + rotationMatrix[2][2] * oldZ;
 }
 
-std::valarray<double> findRotationAxis(const std::unique_ptr<Residue>& residue, const std::string& axis)
+std::valarray<double> findRotationAxis(const Residue& residue, const std::string& axis)
 {
-    for (const Atom& atom : residue->atoms) {
+    for (const Atom& atom : residue.atoms) {
         if (atom.name == axis) {
             return atom.coords;
         }
@@ -51,13 +51,13 @@ double calculateDistance(const Atom& atom1, const Atom& atom2) {
     return std::sqrt(std::pow(atom2.coords - atom1.coords, 2).sum());
 }
 
-std::vector<std::vector<double>> calculateDistanceMatrix(const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap) {
+std::vector<std::vector<double>> calculateDistanceMatrix(const std::unique_ptr<std::map<char, std::vector<Residue>>> & chainMap) {
     int numAtoms = 0;
 
     // Calculate the total number of atoms in the chainMap
-    for (const auto& chainEntry : chainMap) {
+    for (const auto& chainEntry : *chainMap) {
         for (auto & residue : chainEntry.second) {
-            numAtoms += residue->atoms.size();
+            numAtoms += residue.atoms.size();
         }
     }
 
@@ -66,14 +66,14 @@ std::vector<std::vector<double>> calculateDistanceMatrix(const std::map<char, st
     int currentIndex = 0;
 
     // Iterate through the chainMap structure
-    for (const auto& chainEntry1 : chainMap) {
+    for (const auto& chainEntry1 : *chainMap) {
         for (auto const& residue1 : chainEntry1.second) {
-            for (const Atom& atom1 : residue1->atoms) {
+            for (const Atom& atom1 : residue1.atoms) {
                 int otherIndex = 0;
 
-                for (const auto& chainEntry2 : chainMap) {
+                for (const auto& chainEntry2 : *chainMap) {
                     for (auto const&  residue2 : chainEntry2.second) {
-                        for (const Atom& atom2 : residue2->atoms) {
+                        for (const Atom& atom2 : residue2.atoms) {
                             double distance = calculateDistance(atom1, atom2);
                             distanceMatrix[currentIndex][otherIndex] = distance;
 
@@ -95,31 +95,31 @@ std::vector<std::vector<double>> calculateDistanceMatrix(const std::map<char, st
     return distanceMatrix;
 }
 
-std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap, const std::unique_ptr<Residue>& refres)
+std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::unique_ptr<std::map<char, std::vector<Residue>>> & chainMap, const Residue& refres)
 {
     int numAtoms = 0;
 
     // Calculate the total number of atoms in the chainMap
-    for (const auto& chainEntry : chainMap) {
+    for (const auto& chainEntry : *chainMap) {
         for (auto const& residue : chainEntry.second) {
-            numAtoms += residue->atoms.size();
+            numAtoms += residue.atoms.size();
         }
     }
 
-    std::vector<std::vector<double>> distanceMatrix =  std::vector<std::vector<double>>(numAtoms, std::vector<double>(refres->atoms.size(), 0.0));
+    std::vector<std::vector<double>> distanceMatrix =  std::vector<std::vector<double>>(numAtoms, std::vector<double>(refres.atoms.size(), 0.0));
 
     int currentIndex = 0;
 
     // Iterate through the chainMap structure
-    for (const auto& chainEntry1 : chainMap) {
+    for (const auto& chainEntry1 : *chainMap) {
         for (auto const& residue1: chainEntry1.second) {
-            for (const Atom& atom1: residue1->atoms) {
+            for (const Atom& atom1: residue1.atoms) {
                 int otherIndex = 0;
-                for (const Atom& atom2: refres->atoms) {
+                for (const Atom& atom2: refres.atoms) {
                     double distance = calculateDistance(atom1, atom2);
                     distanceMatrix[currentIndex][otherIndex] = distance;
                     // Set diagonal elements to 10
-                    if (residue1 == refres && atom1 == atom2) {
+                    if (residue1.resSeq == refres.resSeq && atom1 == atom2) {
                         distanceMatrix[currentIndex][otherIndex] = 10;
                     }
                     otherIndex++;
@@ -160,11 +160,11 @@ double calculateRMSD(const std::vector<Atom>& atoms1, const std::vector<Atom>& a
     return std::sqrt(sumSquaredDifferences / static_cast<double>(numAtoms));
 }
 
-std::valarray<double> calculateCentroid(const std::unique_ptr<Residue>& res)
+std::valarray<double> calculateCentroid(const Residue& res)
 {
     std::valarray<double> centroid{0., 0., 0.};
-    double num_atoms = res->atoms.size();
-    for (const Atom& atom: res->atoms) {
+    double num_atoms = res.atoms.size();
+    for (const Atom& atom: res.atoms) {
         centroid+=atom.coords;
     }
     return centroid/num_atoms;
@@ -172,7 +172,7 @@ std::valarray<double> calculateCentroid(const std::unique_ptr<Residue>& res)
 
 
 
-bool areResiduesNeighbors(const std::unique_ptr<Residue>& residue1, const std::unique_ptr<Residue>& residue2, double threshold) {
+bool areResiduesNeighbors(const Residue& residue1, const Residue& residue2, double threshold) {
     std::valarray<double> cog1 = calculateCentroid(residue1);
     std::valarray<double> cog2 = calculateCentroid(residue2);
     double distance = std::sqrt(std::pow(cog2-cog1, 2).sum());
@@ -183,18 +183,18 @@ bool areResiduesNeighbors(const std::unique_ptr<Residue>& residue1, const std::u
     return false;
 }
 
-const std::map<char, std::vector<int>> findInterfaceResidues(const std::map<char, std::vector<std::unique_ptr<Residue>>>& chainMap, double cutoff) {
+const std::map<char, std::vector<int>> findInterfaceResidues(const std::unique_ptr<std::map<char, std::vector<Residue>>> & chainMap, double cutoff) {
     std::map<char, std::vector<int>>  interfaceResidues;
 
-    for (const auto& chainEntry1 : chainMap) {
+    for (const auto& chainEntry1 : *chainMap) {
         interfaceResidues[chainEntry1.first] = std::vector<int>();
         for (auto const& residue1 : chainEntry1.second) {
-            for (const auto& chainEntry2 : chainMap) {
+            for (const auto& chainEntry2 : *chainMap) {
                 if (chainEntry1.first != chainEntry2.first) {
                     for (auto const & residue2 : chainEntry2.second) {
                         if (areResiduesNeighbors(residue1, residue2, cutoff)) {
                             // Check if residues are adjacent by comparing residue sequence numbers
-                                interfaceResidues[chainEntry1.first].emplace_back(residue1->resSeq);
+                                interfaceResidues[chainEntry1.first].emplace_back(residue1.resSeq);
                                 //interfaceResidues.push_back(residue1.resSeq);
                                 break;  // No need to check further for this residue1
                         }

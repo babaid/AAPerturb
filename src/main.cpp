@@ -96,6 +96,7 @@ int main(int argc, char *argv[]) {
     std::size_t num_variations = program.get<std::size_t >("-N");
     std::size_t batch_size = program.get<std::size_t>("-b");
 
+
     createdataset(input_dir, output_dir, num_variations, batch_size, force, verbose);
     return 0;
 }
@@ -112,7 +113,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
     if (verbose){
         std::cout << "Opening " << filename << " for perturbation." << std::endl;
     }
-    std::map<char, std::vector<std::unique_ptr<Residue>>> structure = parsePDB(filename);
+    std::unique_ptr<std::map<char, std::vector<Residue>>>  structure = parsePDB(filename);
     if (verbose) std::cout << "Looking for interface residues." << std::endl;
 
     std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure, 9.0);
@@ -138,7 +139,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
             if(verbose) std::cout << res.first << " : " << res.second[0] << std::endl;
 
-            std::unique_ptr<Residue> ref_residue = std::make_unique<Residue>(Residue(*structure.at(res.first)[res.second[0]]));
+            Residue ref_residue(structure->at(res.first).at(res.second[0]));
             std::vector<std::string> comments;
 
             for (std::size_t &resid: res.second) {
@@ -152,13 +153,13 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
                 }
                 catch (...)
                 {
-                    if(verbose)std::cout << "Something was not right..." << std::endl;
+                    if(verbose)std::cout << "Something was not right..."  << std::endl;
                     continue;
                 }
 
                 if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
 
-                std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue->resSeq));
+                std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
                 std::string comment2 = std::format("RMSD: {}", rmsd);
 
                 comments.push_back(comment1);
@@ -167,7 +168,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
             if(verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
 
             saveToPDBWithComments(out_path, structure, comments);
-            *structure.at(res.first)[res.second[0]] = *ref_residue;
+            structure->at(res.first).at(res.second[0]) = ref_residue;
         }
         else
         {

@@ -35,7 +35,7 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<cha
 
 }
 
-double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr<Residue>>>& structure, char chain, std::size_t resNum)
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure, char chain, std::size_t resNum)
 {
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -45,9 +45,8 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr
                         // optionally we could differentiate between types of atoms at clashes, but is it worth it?
 
     std::uniform_real_distribution<double> dist( -angles, angles);
-    std::string resName = structure.at(chain).at(resNum)->atoms[0].resName;
-    std::unique_ptr<Residue> ref_res = std::make_unique<Residue>(Residue());
-    *ref_res = *structure.at(chain).at(resNum);
+    std::string resName = structure->at(chain).at(resNum).atoms[0].resName;
+    Residue ref_res(structure->at(chain).at(resNum));
     //Residue ref_res(structure->at(chain).at(resNum));
     //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
     double rmsd{0};
@@ -70,37 +69,34 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr
                 //for (const std::string &s: sub_atoms) std::cout << s << " ";
                 //std::cout << std::endl;
 
-                std::valarray<double> rot_coords = findRotationAxis(structure.at(chain).at(resNum), axis);
+                std::valarray<double> rot_coords = findRotationAxis(structure->at(chain).at(resNum), axis);
 
                 double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
                 double angle = dist(rng);
 
-                for (Atom& atom: structure[chain][resNum]->atoms)
+                for (Atom& atom: structure->at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
 
                         rotateCoordinatesAroundAxis(atom.coords, rot_coords / vec_norm, angle);
 
                     }
             }
-            try {
-                std::vector<std::vector<double>> distance_matrix = std::move(
-                        calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum)));
+
+                std::vector<std::vector<double>> distance_matrix =
+                        calculateLocalDistanceMatrix(structure, structure->at(chain).at(resNum));
 
                 if (detect_clashes(distance_matrix, 0.21)) {
                     //std::cout << "Atoms clashed, retrying..." << std::endl;
-                    *structure.at(chain).at(resNum) = *ref_res;
+                    structure->at(chain).at(resNum) = ref_res;
                     patience++;
                     angles = angles / 10;
                     std::uniform_real_distribution<double> dist(-angles, angles);
                     continue;
                 } else patience = 0;
-                rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
+                rmsd = calculateRMSD(ref_res.atoms, structure->at(chain).at(resNum).atoms);
                 //std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
-            }
-            catch(...)
-            {
-                continue;
-            }
+
+
 
         }
     }

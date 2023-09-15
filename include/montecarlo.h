@@ -11,6 +11,6 @@
 #include "molecules.h"
 
 std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<char, std::vector<int>>&);
-double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr<Residue>>>& , char , std::size_t );
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & , char , std::size_t );
 
 #endif
