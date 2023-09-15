@@ -29,6 +29,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
 
     //long long int prevResSeq{-1}, residueCounter{-1};
 
+
     while (std::getline(pdbFile, line)) {
         if (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters) )  {
             Atom atom;
@@ -49,21 +50,16 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
             // Check if this chain is already in the map
             if (chainMap->find(atom.chainID) == chainMap->end()) {
                 (*chainMap)[atom.chainID] = std::vector<Residue>();
+
                 //prevResSeq = 0;
             }
 
-            //if(atom.resSeq != prevResSeq) {
-            //    residueCounter++;
-            //}
-
-            //prevResSeq = atom.resSeq;
 
             // Check if this residue is already in the chain's residues
             bool found = false;
             for (auto& residue : chainMap->at(atom.chainID)) {
                 if (residue.resSeq == atom.resSeq && residue.resName == atom.resName) {
-                    if(atom.element == "H" && deprotonate) continue;
-                    else residue.atoms.emplace_back(std::move(atom));
+                    residue.atoms.emplace_back(std::move(atom));
                     found = true;
                     break;
                 }
@@ -75,8 +71,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
                 newResidue.chainID = atom.chainID;
                 newResidue.resSeq = atom.resSeq; //residueCounter;
                 newResidue.resName = atom.resName;
-                if (atom.element == "H" && deprotonate) continue;
-                else newResidue.atoms.emplace_back(std::move(atom));
+                newResidue.atoms.emplace_back(std::move(atom));
                 //newResidue.atom_coords.push_back({atom.x, atom.y, atom.z});
                 chainMap->at(atom.chainID).emplace_back(std::move(newResidue));
                 //(*chainMap)[atom.chainID].push_back(newResidue);
@@ -125,7 +120,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             atom.altLoc = line[16];
             atom.resName = line.substr(17, 3);
             atom.chainID = line[21];
-            atom.resSeq = std::stoi(line.substr(22, 4)) - 1;
+            atom.resSeq = std::stoi(line.substr(22, 4));
             atom.coords = {std::stod(line.substr(30, 8)), std::stod(line.substr(38, 8)),
                             std::stod(line.substr(46, 8))};
             atom.occupancy = std::stod(line.substr(54, 6));
@@ -275,7 +270,7 @@ void saveToPDB(const fs::path& outputFilename, const std::unique_ptr<std::map<ch
                 pdbFile << " ";
                 pdbFile << chainEntry.first;
                 pdbFile.width(4);
-                pdbFile << std::right << residue.resSeq+1;
+                pdbFile << std::right << residue.resSeq;
                 //pdbFile << atom.iCode;
                 pdbFile << "    ";
                 pdbFile.width(8);
