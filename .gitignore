@@ -6,6 +6,7 @@ executables/
 /cmake-build-debug
 _out/
 _temp/
+_**/
 # Compiled Object files
 *.slo
 *.lo
