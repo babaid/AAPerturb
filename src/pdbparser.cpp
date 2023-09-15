@@ -140,6 +140,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
             // Check if this chain is already in the map
             if (chainMap->find(atom.chainID) == chainMap->end()) {
+                std::cout << "There where " << residueCounter << " residues in chain " << atom.chainID << std::endl;
                 (*chainMap)[atom.chainID] = std::vector<Residue>();
                 residueCounter = -1;
             }
