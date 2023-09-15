@@ -38,6 +38,7 @@ add_executable(aaperturb
         include/molecules.h
         src/molecules.cpp
         include/fancy.h
+        src/fancy.cpp
 )
 
 add_executable(iffind

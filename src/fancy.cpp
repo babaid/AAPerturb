@@ -5,8 +5,11 @@
 //
 #include<iostream>
 #include "fancy.h"
+
 // https://github.com/GregoryConrad/pBar/tree/master
 
+ProgressBar::ProgressBar(int neededprogress): neededProgress(neededprogress){
+}
 
 void ProgressBar::update() {
     currentProgress += 1;

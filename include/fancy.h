@@ -11,10 +11,7 @@
 
 class ProgressBar {
 public:
-    ProgressBar(int neededprogress): neededProgress(neededprogress)
-    {
-
-    }
+    ProgressBar(int neededprogress);
     void update();
     void print();
     std::string firstPartOfpBar = "[",
