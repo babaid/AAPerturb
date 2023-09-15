@@ -119,7 +119,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
     if (verbose){
         std::cout << "Found following number of interface residues in the chains: ";
-        auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size();};
+        auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
         std::for_each(interface_residue_indices.begin(), interface_residue_indices.end(), print_chain_n);
     }
 
