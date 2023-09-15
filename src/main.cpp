@@ -121,7 +121,9 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         std::cout << "Found following number of interface residues in the chains: ";
         auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
         std::for_each(interface_residue_indices.begin(), interface_residue_indices.end(), print_chain_n);
+        std::cout<< std::endl;
     }
+
 
     for (unsigned int i = 0; i < num_perturbations; ++i) {
 
@@ -130,7 +132,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
         if (!fs::exists(out_path) || force) {
 
-            if(verbose) std::cout << "Choosing a random residue to perturb: ";
+            if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
 
             std::pair<char, std::vector<std::size_t>> res = chooseRandomResidue(interface_residue_indices);
 
