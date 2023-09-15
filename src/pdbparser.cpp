@@ -135,9 +135,9 @@ std::map<char, std::vector<std::unique_ptr<Residue>>> parsePDBToBeCleaned(const 
             // Check if this chain is already in the map
             if (chainMap.find(atom->chainID) == chainMap.end()) {
                 chainMap[atom->chainID] = std::vector<std::unique_ptr<Residue>>();
+
                 residueCounter = -1;
             }
-
             if (atom->resSeq != prevResSeq) {
                 residueCounter++;
             }
