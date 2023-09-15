@@ -37,7 +37,6 @@ add_executable(aaperturb
         src/montecarlo.cpp
         include/molecules.h
         src/molecules.cpp
-        src/pdbcleaner.cpp
         include/fancy.h
 )
 
