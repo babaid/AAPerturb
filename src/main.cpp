@@ -121,7 +121,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
     }
     if (verbose) std::cout << "Looking for interface residues." << std::endl;
 
-    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure, 9.0);
+    std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure, 12.0);
 
     if (verbose){
         std::cout << "Found following number of interface residues in the chains: ";
