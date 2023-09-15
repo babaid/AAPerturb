@@ -175,11 +175,12 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             }
         }
 
-        if (!parsingFirstModel) {
-            pdbFile.clear(); // Reset the end-of-file flag
-            pdbFile.seekg(0, std::ios::beg); // Rewind to the beginning of the file
-            parsingAtoms = true; // Start parsing atoms from the beginning
-
+    }
+    if (!parsingFirstModel) {
+        pdbFile.clear(); // Reset the end-of-file flag
+        pdbFile.seekg(0, std::ios::beg); // Rewind to the beginning of the file
+        parsingAtoms = true;
+        while (std::getline(pdbFile, line)) {
             if (parsingAtoms && (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters)) ) {
                 Atom atom;
                 //atom.serial = std::stoi(line.substr(6, 5));
@@ -239,7 +240,10 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
         }
 
-    pdbFile.close();
+
+    }
+        pdbFile.close();
+
 
     return chainMap;
 }
