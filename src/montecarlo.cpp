@@ -57,10 +57,12 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr
         while (rmsd == 0 && patience < 3) {
             for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
                 //std::cout << "Rotating around axis: " << axis << std::endl;
+
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
                 std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
                 auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index + 1;
+
                 std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                         resName).end());
 
@@ -80,19 +82,25 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr
 
                     }
             }
-            auto distance_matrix = calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum)); //this is a pointer!!!!!
+            try {
+                std::vector<std::vector<double>> distance_matrix = std::move(
+                        calculateLocalDistanceMatrix(structure, structure.at(chain).at(resNum)));
 
-            if (detect_clashes(distance_matrix, 0.21))  {
-                //std::cout << "Atoms clashed, retrying..." << std::endl;
-                *structure.at(chain).at(resNum) = *ref_res;
-                patience++;
-                angles = angles/10;
-                std::uniform_real_distribution<double> dist( -angles, angles);
+                if (detect_clashes(distance_matrix, 0.21)) {
+                    //std::cout << "Atoms clashed, retrying..." << std::endl;
+                    *structure.at(chain).at(resNum) = *ref_res;
+                    patience++;
+                    angles = angles / 10;
+                    std::uniform_real_distribution<double> dist(-angles, angles);
+                    continue;
+                } else patience = 0;
+                rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
+                //std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
+            }
+            catch(...)
+            {
                 continue;
             }
-            else patience=0;
-            rmsd = calculateRMSD(ref_res->atoms, structure.at(chain).at(resNum)->atoms);
-            //std::cout << "Current RMSD of the residue is: " << rmsd << std::endl;
 
         }
     }
