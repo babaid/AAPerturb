@@ -120,7 +120,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             atom.altLoc = line[16];
             atom.resName = line.substr(17, 3);
             atom.chainID = line[21];
-            atom.resSeq = std::stoi(line.substr(22, 4));
+            atom.resSeq = std::stoi(line.substr(22, 4))-1;
             atom.coords = {std::stod(line.substr(30, 8)), std::stod(line.substr(38, 8)),
                             std::stod(line.substr(46, 8))};
             atom.occupancy = std::stod(line.substr(54, 6));
