@@ -44,7 +44,7 @@ std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vect
             }
 
         }
-        return std::make_pair(chain->first, resindex);
+        return std::make_pair(chain->first, resindex-1);
     }
     else
     {
@@ -60,7 +60,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
     {
         std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl << "Trying to perturb..." << std::endl;
     }
-    resNum--;
+
     /*if(structure->at(chain).size() <= resNum)
     {
         if(verbose)
