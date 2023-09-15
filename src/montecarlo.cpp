@@ -83,9 +83,11 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         // the greater the angle range gets, the greater should be the clash cutoff
                         // optionally we could differentiate between types of atoms at clashes, but is it worth it?
     std::uniform_real_distribution<double> dist( -angles, angles);
+    std::string resName;
+    Residue ref_res;
     try {
         std::string resName = structure->at(chain).at(resNum).resName;
-        Residue ref_res(structure->at(chain).at(resNum));
+        ref_res = structure->at(chain).at(resNum);
     }
     catch (std::out_of_range &orr)
     {
