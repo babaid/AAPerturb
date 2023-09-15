@@ -107,8 +107,15 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
     long long int atomcntr{0};
     bool parsingAtoms = false;
     while (std::getline(pdbFile, line)) {
-        if ((line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters))) {
-            parsingAtoms = true;
+        if (line.compare(0, 5, "MODEL") == 0) {
+            parsingAtoms = true; // Start parsing atoms when a "MODEL" is encountered
+            continue;
+        }
+        if (line.compare(0, 6, "ENDMDL") == 0) {
+            parsingAtoms = false; // End parsing atoms when "ENDMDL" is encountered
+            continue;
+        }
+        if (parsingAtoms && (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters)) ) {
             Atom atom;
             //atom.serial = std::stoi(line.substr(6, 5));
             atom.name = line.substr(12, 4);
@@ -189,6 +196,7 @@ void saveToPDB(const fs::path& outputFilename, const std::unique_ptr<std::map<ch
 
     // Set the formatting for residue.resSeq
     pdbFile << std::fixed << std::setprecision(0);
+    pdbFile << "MODEL        1" << std::endl;
 
     // Write the modified atom records
     for (const auto& chainEntry : *chainMap) {
@@ -226,7 +234,7 @@ void saveToPDB(const fs::path& outputFilename, const std::unique_ptr<std::map<ch
             }
         }
     }
-
+    pdbFile << "ENDMDL"<< std::endl;
     pdbFile.close();
 }
 
@@ -241,7 +249,7 @@ void saveToPDBWithComments(const fs::path& outputFilename, const std::unique_ptr
 
     // Set the formatting for residue.resSeq
     pdbFile << std::fixed << std::setprecision(0);
-
+    pdbFile << "MODEL        1" << std::endl;
     for(const std::string& comment: comments)
     {
         pdbFile << "REMARK ";
@@ -292,7 +300,6 @@ void saveToPDBWithComments(const fs::path& outputFilename, const std::unique_ptr
             }
         }
     }
-    pdbFile << "END" << std::endl;
-
+    pdbFile << "ENDMDL"<< std::endl;
     pdbFile.close();
 }
