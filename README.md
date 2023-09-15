@@ -17,7 +17,7 @@ For some of the implementations refer to Biopython, rdkit, and the really useful
 
 I would say my code is anything else than highly optimized. There are different ways to implement rotations, translations and calculations of distances for molecules.
 Although it would have been more efficient to work with matrices of atomic coordinates, this would mean to keep track of exactly how those matrices are ordered in terms of atoms and residues.
-So to keep it simple, and book keeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains. If someone has a more efficient idea please contact me.
+So to keep it simple, and bookkeeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains. If someone has a more efficient idea please contact me.
 
 ## Random Perturbations
 
@@ -26,9 +26,9 @@ on the interface between two chains of the protein-protein complex.
 The created data set can be used after for an autoencoder-like machine learning approach to capture PPI's and effects of mutations proteins.
 
 The execution flow is as follows:
-1. find interface residues on the PP complex, given a cutoff value
-2. Chose random interface residue
-3. perturb it
+1. Find interface residues on the PP complex, given a cutoff value
+2. Choose random interface residue
+3. Perturb chosen residue
 
 For now this perturbation is just torsion about the sidechain axes which could in theory freely rotate.
 In my head the only condition for acceptance of a conformation after a perturbation, is that there are no clashes between atoms.
