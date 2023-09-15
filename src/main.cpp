@@ -114,6 +114,11 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         std::cout << "Opening " << filename << " for perturbation." << std::endl;
     }
     std::unique_ptr<std::map<char, std::vector<Residue>>>  structure = parsePDB(filename);
+    if (verbose)
+    {
+        auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
+        std::for_each(structure->begin(), structure->end(), print_chain_n);
+    }
     if (verbose) std::cout << "Looking for interface residues." << std::endl;
 
     std::map<char, std::vector<int>> interface_residue_indices = findInterfaceResidues(structure, 9.0);
