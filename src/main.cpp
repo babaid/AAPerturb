@@ -140,40 +140,40 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
             if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
 
-            std::pair<char, std::vector<std::size_t>> res = chooseRandomResidue(interface_residue_indices);
+            std::pair<char , std::size_t>  res = chooseRandomResidue(interface_residue_indices);
 
-            if(verbose) std::cout << res.first << " : " << res.second[0] << std::endl;
+            if(verbose) std::cout << res.first << " : " << res.second << std::endl;
 
-            Residue ref_residue(structure->at(res.first).at(res.second[0]));
+            Residue ref_residue(structure->at(res.first).at(res.second));
             std::vector<std::string> comments;
 
-            for (std::size_t &resid: res.second) {
 
-                if(verbose) std::cout << "Perturbing the chosen residue";
 
-                //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
-                double rmsd = std::numeric_limits<double>::infinity();
-                try {
-                    rmsd = rotateResidueSidechainRandomly(structure, res.first, resid, verbose);
-                }
-                catch (...)
-                {
-                    if(verbose)std::cout << "Something was not right..."  << std::endl;
-                    continue;
-                }
+            if(verbose) std::cout << "Perturbing the chosen residue";
 
-                if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
-
-                std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
-                std::string comment2 = std::format("RMSD: {}", rmsd);
-
-                comments.push_back(comment1);
-                comments.push_back(comment2);
+            //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
+            double rmsd = std::numeric_limits<double>::infinity();
+            try {
+                rmsd = rotateResidueSidechainRandomly(structure, res.first, res.second, verbose);
             }
+            catch (...)
+            {
+                if(verbose)std::cout << "Something was not right..."  << std::endl;
+                continue;
+            }
+
+            if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
+
+            std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
+            std::string comment2 = std::format("RMSD: {}", rmsd);
+
+            comments.push_back(comment1);
+            comments.push_back(comment2);
+
             if(verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
 
             saveToPDBWithComments(out_path, structure, comments);
-            structure->at(res.first).at(res.second[0]) = ref_residue;
+            structure->at(res.first).at(res.second) = ref_residue;
         }
         else
         {

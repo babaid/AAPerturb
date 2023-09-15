@@ -15,23 +15,34 @@
 /*
  * This function chooses a random Residue, given a map of possible chains with possible residue indices.
  */
-std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<char, std::vector<int>>& interface_residue_indices)
+std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vector<int>>& interface_residue_indices)
 {
+
+    std::size_t resindex = std::numeric_limits<std::size_t>::max();
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<> dist(0, interface_residue_indices.size()-1);
+    std::uniform_int_distribution<> dist(0, interface_residue_indices.size() - 1); // for chain selection
     auto chain = interface_residue_indices.begin();
-    std::advance(chain,  dist(rng));
-    //Choose random residue on chain
-    //std::size_t nelements = 1; //we want to change one residue for now
-    std::random_device dev2;
-    std::mt19937 rng2(dev2());
-    std::vector<std::size_t> residues;
-    //this somehow kills the program so I will use something else
-    //std::sample(chain->second.begin(), chain->second.end(), std::back_inserter(residues), nelements, std::mt19937(std::random_device{}()));
-    std::uniform_int_distribution<> resdist(0, chain->second.size()-2);
-    residues.emplace_back(chain->second.at(resdist(rng2)));
-    return std::make_pair(chain->first, residues);
+    if (!interface_residue_indices.empty()) {
+        while(resindex == std::numeric_limits<std::size_t>::max()) {
+            chain = interface_residue_indices.begin();
+            std::advance(chain, dist(rng));
+            if (chain != interface_residue_indices.end() && !chain->second.empty()) {
+                std::uniform_int_distribution<std::size_t> elementDist(0, chain->second.size() - 1);
+                resindex = chain->second.at(elementDist(rng));
+            }
+            else
+            {
+                throw std::out_of_range("Some issue at random residue selection, either chain is empty or there are no chains.");
+            }
+
+        }
+        return std::make_pair(chain->first, resindex);
+    }
+    else
+    {
+        throw std::out_of_range("Something is terribly wrong with the residue interfaces you try to feed me. They seem to be empty. Maybe increase the cutoff.");
+    }
 
 }
 
