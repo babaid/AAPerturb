@@ -105,13 +105,15 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
     long long int prevResSeq{-1}, residueCounter{-1};
     long long int atomcntr{0};
+    bool parsingFirstModel = false;
     bool parsingAtoms = false;
     while (std::getline(pdbFile, line)) {
-        if (line.compare(0, 5, "MODEL") == 0) {
+        if (line.compare(0, 5, "MODEL") == 0 && !parsingFirstModel) {
             parsingAtoms = true; // Start parsing atoms when a "MODEL" is encountered
+            parsingFirstModel = true;
             continue;
         }
-        if (line.compare(0, 6, "ENDMDL") == 0) {
+        if (line.compare(0, 6, "ENDMDL") == 0 && parsingAtoms) {
             parsingAtoms = false; // End parsing atoms when "ENDMDL" is encountered
             continue;
         }
