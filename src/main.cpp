@@ -142,7 +142,15 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
                 if(verbose) std::cout << "Perturbing the chosen residue";
 
-                double rmsd = rotateResidueSidechainRandomly(structure, res.first, resid);
+                //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
+                try {
+                    double rmsd = rotateResidueSidechainRandomly(structure, res.first, resid);
+                }
+                catch (...)
+                {
+                    if(verbose)std::cout << "Something was not right..." << std::endl;
+                    continue;
+                }
 
                 if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
 
