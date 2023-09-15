@@ -10,6 +10,7 @@
 #include<algorithm>
 #include<thread>
 #include<format>
+#include<limits>
 #include<argparse/argparse.hpp>
 #include "pdbparser.h"
 #include "geometry.h"
@@ -143,8 +144,9 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
                 if(verbose) std::cout << "Perturbing the chosen residue";
 
                 //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
+                double rmsd = std::numeric_limits<double>::infinity();
                 try {
-                    double rmsd = rotateResidueSidechainRandomly(structure, res.first, resid);
+                    rmsd = rotateResidueSidechainRandomly(structure, res.first, resid);
                 }
                 catch (...)
                 {
