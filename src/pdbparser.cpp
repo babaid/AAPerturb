@@ -130,9 +130,6 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             if ((atom.element == "H" && deprotonate)) continue;
 
             //My head hurts thinking about how many problems this cause me in the previous months.
-            if(atom.altLoc != ' '){
-                std::cout << "Alternate location: " << atom.altLoc << std::endl;
-            }
 
             atom.serial = ++atomcntr;
 
