@@ -64,6 +64,8 @@ add_executable(pdbcleaner
         src/io.cpp
         include/molecules.h
         src/molecules.cpp
+        include/fancy.h
+        src/fancy.cpp
         src/pdbcleaner.cpp
 )
 target_link_libraries(iffind argparse)
