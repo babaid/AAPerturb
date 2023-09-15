@@ -194,7 +194,7 @@ const std::map<char, std::vector<int>> findInterfaceResidues(const std::unique_p
                     for (auto const & residue2 : chainEntry2.second) {
                         if (areResiduesNeighbors(residue1, residue2, cutoff)) {
                             // Check if residues are adjacent by comparing residue sequence numbers
-                                interfaceResidues[chainEntry1.first].emplace_back(residue1.resSeq);
+                                interfaceResidues[chainEntry1.first].emplace_back(residue1.resSeq-1);
                                 //interfaceResidues.push_back(residue1.resSeq);
                                 break;  // No need to check further for this residue1
                         }
