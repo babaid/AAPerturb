@@ -44,7 +44,7 @@ std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vect
             }
 
         }
-        return std::make_pair(chain->first, resindex-1);
+        return std::make_pair(chain->first, --resindex);
     }
     else
     {
