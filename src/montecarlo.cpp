@@ -53,13 +53,27 @@ std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vect
 
 }
 
-double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure, const char chain, const std::size_t resNum, bool verbose)
+double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & structure,  char& chain, std::size_t& resNum, bool verbose)
 {
+
     if (verbose)
     {
-        std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl;
+        std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl << "Trying to perturb..." << std::endl;
     }
-
+    if(structure->at(chain).size()<= resNum)
+    {
+        if(verbose)
+        {
+            std::cout << "This would have been an out of range error but I saved you and your soul. " << std::endl;
+            std::cout << "We are going to cheat now: " << std::endl;
+        }
+        while(structure->at(chain).size()<= resNum) --resNum;
+        if (verbose) {
+            std::cout << "New target residue (may not be at interface): " << chain << ":" << resNum << std::endl;
+            std::cout << "Consider deleting and trying to do another one" << std::endl << "RESERR" << std::endl;
+        }
+        return 0;
+    }
 
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
@@ -93,7 +107,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
 
                 for (Atom& atom: structure->at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
-                        if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
+                        //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
                         rotateCoordinatesAroundAxis(atom.coords, rot_coords / vec_norm, angle);
 
                     }
