@@ -71,9 +71,11 @@ int main(int argc, char *argv[]) {
         bar.update();
         if (!fs::exists(output_dir/files[i].filename()) || force) {
             auto clean_structure = parsePDBToBeCleaned(files[i]);
-            std::vector<std::string> comments;
-            comments.push_back("This file was previously reindexed and the waters and the hydrogens were removed");
-            saveToPDBWithComments(output_dir / files[i].filename(), clean_structure, comments);
+            if(clean_structure->size()>=2) {
+                std::vector<std::string> comments;
+                comments.push_back("This file was previously reindexed and the waters and the hydrogens were removed");
+                saveToPDBWithComments(output_dir / files[i].filename(), clean_structure, comments);
+            }
         }
         bar.print();
     }
