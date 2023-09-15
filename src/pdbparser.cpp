@@ -167,7 +167,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
             }
         }
-        else if (parsingAtoms && (line.compare(0, 3, "TER")==0) || line.compare(0, 6, "ENDMDL") == 0) //Stop parsing if we hit TER or the first ENDMDL
+        else if (parsingAtoms && ((line.compare(0, 3, "TER")==0) || line.compare(0, 6, "ENDMDL") == 0)) //Stop parsing if we hit TER or the first ENDMDL
             //This will keep us from loading unnecessary stuff and alternative models.
             {
             break;
