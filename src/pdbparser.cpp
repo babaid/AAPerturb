@@ -29,7 +29,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
 
     //long long int prevResSeq{-1}, residueCounter{-1};
 
-
+    unsigned rescntr{0};
     while (std::getline(pdbFile, line)) {
         if (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters) )  {
             Atom atom;
@@ -50,7 +50,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
             // Check if this chain is already in the map
             if (chainMap->find(atom.chainID) == chainMap->end()) {
                 (*chainMap)[atom.chainID] = std::vector<Residue>();
-                std::cout << "There where " << atom.resSeq << " residues in chain " << atom.chainID << std::endl;
+
                 //prevResSeq = 0;
             }
 
@@ -67,6 +67,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
 
             // If the residue doesn't exist, create a new one
             if (!found) {
+                std::cout << "There where " << rescntr++ << " residues in chain " << atom.chainID << std::endl;
                 Residue newResidue;
                 newResidue.chainID = atom.chainID;
                 newResidue.resSeq = atom.resSeq; //residueCounter;
