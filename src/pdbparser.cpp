@@ -50,7 +50,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
             // Check if this chain is already in the map
             if (chainMap->find(atom.chainID) == chainMap->end()) {
                 (*chainMap)[atom.chainID] = std::vector<Residue>();
-
+                std::cout << "There where " << atom.resSeq << " residues in chain " << atom.chainID << std::endl;
                 //prevResSeq = 0;
             }
 
