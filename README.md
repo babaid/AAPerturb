@@ -17,7 +17,7 @@ For some of the implementations refer to Biopython, rdkit, and the really useful
 
 I would say my code is anything else than highly optimized. There are different ways to implement rotations, translations and calculations of distances for molecules.
 Although it would have been more efficient to work with matrices of atomic coordinates, this would mean to keep track of exactly how those matrices are ordered in terms of atoms and residues.
-So to keep it simple, and book keeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains. If someone has a more efficient idea please contact me.
+So to keep it simple, and bookkeeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains. If someone has a more efficient idea please contact me.
 
 ## Random Perturbations
 
