@@ -106,6 +106,8 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
     bool parsingFirstModel = false;
     bool parsingAtoms = false;
 
+    std::unique_ptr<Residue> currentResidue = nullptr;
+
     while (std::getline(pdbFile, line)) {
         if (line.compare(0, 5, "MODEL") == 0 && !parsingFirstModel) {
             parsingAtoms = true; // Start parsing atoms when a "MODEL" is encountered
@@ -149,13 +151,13 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
             }
             if (atom.resSeq != prevResSeq) {
                 residueCounter++;
+
             }
-            prevResSeq = atom.resSeq;
 
             // Check if this residue is already in the chain's residues
             bool found = false;
             for (auto &residue: chainMap->at(atom.chainID)) {
-                if (residue.resSeq == atom.resSeq && residue.resName == atom.resName) {
+                if (residue.resSeq == atom.resSeq && residue.resName == atom.resName && prevResSeq == atom.resSeq) {
                     residue.atoms.push_back(std::move(atom));
                     found = true;
                     break;
@@ -170,8 +172,12 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
                 newResidue.resName = atom.resName;
                 newResidue.atoms.emplace_back(std::move(atom));
                 chainMap->at(atom.chainID).emplace_back(std::move(newResidue));
+                currentResidue = std::make_unique<Residue>(chainMap->at(atom.chainID).back());
 
             }
+
+            prevResSeq = atom.resSeq;
+
         }
 
     }
@@ -213,12 +219,12 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
                 if (atom.resSeq != prevResSeq) {
                     residueCounter++;
                 }
-                prevResSeq = atom.resSeq;
+
 
                 // Check if this residue is already in the chain's residues
                 bool found = false;
                 for (auto &residue: chainMap->at(atom.chainID)) {
-                    if (residue.resSeq == atom.resSeq && residue.resName == atom.resName) {
+                    if (residue.resSeq == atom.resSeq && residue.resName == atom.resName && prevResSeq == atom.resSeq) {
                         residue.atoms.push_back(std::move(atom));
                         found = true;
                         break;
@@ -235,7 +241,9 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
                     chainMap->at(atom.chainID).emplace_back(std::move(newResidue));
 
                 }
+                prevResSeq = atom.resSeq;
             }
+
 
         }
 

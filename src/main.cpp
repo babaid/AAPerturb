@@ -97,7 +97,15 @@ int main(int argc, char *argv[]) {
     std::size_t batch_size = program.get<std::size_t>("-b");
 
 
-    createdataset(input_dir, output_dir, num_variations, batch_size, force, verbose);
+    auto pdb = parsePDB("../_out/5d5m.pdb", verbose=true);
+    for (auto& chain:*pdb)
+    {
+        std::cout << chain.first << ":" << chain.second.size() << std::endl;
+        if (chain.first == 'D') {
+            for (auto &el: chain.second) std::cout << el.resSeq << std::endl;
+        }
+    }
+    //createdataset(input_dir, output_dir, num_variations, batch_size, force, verbose);
     return 0;
 }
 

@@ -61,21 +61,6 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
         std::cout <<  std::endl << "Size of chain: " <<structure->at(chain).size() << std::endl << "Trying to perturb..." << std::endl;
     }
 
-    /*if(structure->at(chain).size() <= resNum)
-    {
-        if(verbose)
-        {
-            std::cout << "This would have been an out of range error but I saved you and your soul. " << std::endl;
-            std::cout << "We are going to cheat now: " << std::endl;
-        }
-        while(structure->at(chain).size() <= resNum) --resNum;
-        if (verbose) {
-            std::cout << "New target residue (may not be at interface): " << chain << ":" << resNum << std::endl;
-            std::cout << "Consider deleting and trying to do another one" << std::endl << "RESERR" << std::endl;
-        }
-        return 0;
-    }*/
-
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
 
