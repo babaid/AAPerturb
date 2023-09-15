@@ -191,7 +191,6 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             fs::create_directory(out);
             perturbRun(files[i], out, num_variations_per_protein, force, verbose);
             if(!verbose) {Pbar.update(); Pbar.print();}
-
         }
     }
     else{
