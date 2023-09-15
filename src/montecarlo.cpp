@@ -37,7 +37,6 @@ std::pair<char ,std::vector<std::size_t>> chooseRandomResidue(const std::map<cha
 
 double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr<Residue>>>& structure, char chain, std::size_t resNum)
 {
-    std::cout << "Performing perturbations" << std::endl;
     std::random_device dev;
     std::mt19937 rng(dev());
     double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
@@ -97,6 +96,5 @@ double rotateResidueSidechainRandomly(std::map<char, std::vector<std::unique_ptr
 
         }
     }
-    std::cout << "Successfull perturbation" << std::endl;
     return rmsd;
 }
