@@ -323,6 +323,7 @@ void saveToPDBWithComments(const fs::path& outputFilename, const std::unique_ptr
     // Set the formatting for residue.resSeq
     pdbFile << std::fixed << std::setprecision(0);
     pdbFile << "MODEL        1" << std::endl;
+    
     for(const std::string& comment: comments)
     {
         pdbFile << "REMARK ";

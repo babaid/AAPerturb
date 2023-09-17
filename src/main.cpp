@@ -27,7 +27,7 @@ bool verbose=false;
 bool force = false;
 
 void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool, const bool);
-void perturbRun(fs::path, fs::path, unsigned int, const bool, const bool);
+void perturbRun(fs::path, fs::path, unsigned int, const bool);
 
 int main(int argc, char *argv[]) {
 
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
 /*
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
-void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbations, const bool force, const bool verbose) {
+void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbations, const bool verbose) {
 
     if (verbose){
         std::cout << "Opening " << filename << " for perturbation." << std::endl;
@@ -191,7 +191,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 }
 
 
-void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool force, const bool verbose) {
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size,  const bool force, const bool verbose) {
 
     std::cout << "Creating Threadpool" << std::endl;
 
@@ -216,16 +216,15 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
 
 
-        std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, force, verbose);
+        std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
         futures.emplace_back(std::move(result));
         for (auto& future:futures){
-            auto status = future.wait_for(std::chrono::milliseconds(5000));
+            auto status = future.wait_for(std::chrono::milliseconds(10000)); // We allow
             if(status==std::future_status::timeout){
                  std::cout << "Task timed out " << std::endl;
                  //pool.handleTimeout(future);
             }
         }
-        
         if (verbose) std::cout  << "Batch " << static_cast<int>(i / batch_size)
                                 << "/" << (int) (files.size() / batch_size)
                                 << " is done." << std::endl;

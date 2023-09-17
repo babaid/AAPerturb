@@ -64,6 +64,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
 
+    //this is where you could use your own distribution of angles
     double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
                         // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
                         // the greater the angle range gets, the greater should be the clash cutoff
@@ -80,6 +81,8 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
     //we do not prefer GLY PRO and ALA. Maybe only for displacement
     if(resName!="GLY" && resName!= "PRO" && resName!= "ALA") {
         while (rmsd == 0 && patience < 3) {
+
+
             for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
