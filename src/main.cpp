@@ -193,23 +193,23 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool force, const bool verbose) {
 
+    std::cout << "Creating Threadpool" << std::endl;
 
     ThreadPool pool(batch_size); // Thread pool UwU
-    
+    std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
 
-   
+    
 
     for (unsigned int i{0}; i<files.size(); i++) {
 
-        std::vector<std::future<void>> futures;
-
+        
         //filesystem stuff
         fs::path filedir{files[i].filename()};
         filedir.replace_extension("");
         fs::path out = outputdir / filedir;
-        if (fs::is_directory(out) && !force) {continue; if(!verbose)Pbar.update();}
+        if (fs::is_directory(out) && !force) {if(!verbose){Pbar.update(); Pbar.print();} continue; }
         fs::create_directory(out);
 
         // filesystem stuff done
@@ -219,10 +219,10 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, force, verbose);
         futures.emplace_back(std::move(result));
         for (auto& future:futures){
-            auto status = future.wait_for(std::chrono::milliseconds(500));
+            auto status = future.wait_for(std::chrono::milliseconds(5000));
             if(status==std::future_status::timeout){
                  std::cout << "Task timed out " << std::endl;
-                 pool.handleTimeout(future);
+                 //pool.handleTimeout(future);
             }
         }
         

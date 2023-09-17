@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         std::vector<fs::path> files = findInputFiles(input_dir);
         std::vector<std::map<char, std::vector<int>>> all;
         for (auto file: files) {
-            std::map<char, std::vector<Residue *>> structure = parsePDB(file);
+            std::unique_ptr<std::map<char, std::vector<Residue>>> structure = parsePDB(file);
             const std::map<char, std::vector<int>> interface_residues = findInterfaceResidues(structure, 12.0);
 
             fs::path outputFilename = output_dir / file.replace_extension(".sel").filename();
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     }
     else if (fs::exists(input_dir) && !fs::is_directory(input_dir) && output_dir.empty())
     {
-        std::map<char, std::vector<Residue *>> structure = parsePDB(input_dir);
+        std::unique_ptr<std::map<char, std::vector<Residue>>> structure = parsePDB(input_dir);
         const std::map<char, std::vector<int>> interface_residues = findInterfaceResidues(structure, 12.0);
         for (const auto &chain: interface_residues) {
             for (const auto &resnum: interface_residues.at(chain.first)) {

@@ -28,7 +28,7 @@ public:
 
                     // Execute the task
                     if (task) {
-                         while (!cancelFlag.load() && !taskCompletedFlag.load()) 
+                         //while (!cancelFlag.load() && !taskCompletedFlag.load()) 
                             task();
                       
                     }
@@ -41,7 +41,7 @@ public:
     ~ThreadPool() {
         // Join all threads in the pool
 
-        cancelFlag.store(true);
+        //cancelFlag.store(true);
 
         for (auto& thread : threads) {
             thread.join();
@@ -71,17 +71,17 @@ public:
 
         return result;
     }
-    void handleTimeout(std::future<void>& future) {
+    //void handleTimeout(std::future<void>& future) {
         // Set the taskCompletedFlag to true when a timeout occurs
-        taskCompletedFlag.store(true);
-    }
+     //   taskCompletedFlag.store(true);
+    //}
 
 private:
     std::vector<std::thread> threads;
     std::queue<std::function<void()>> tasks;
     std::mutex mutex;
     std::condition_variable condition;
-    std::atomic<bool> cancelFlag{false};
-    std::atomic<bool> taskCompletedFlag{false};
+    //std::atomic<bool> cancelFlag{false};
+    //std::atomic<bool> taskCompletedFlag{false};
 };
 
