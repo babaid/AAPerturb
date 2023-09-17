@@ -7,12 +7,13 @@ executables/
 _out/
 _temp/
 _**/
+.vscode/
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
+/build
 # Precompiled Headers
 *.gch
 *.pch

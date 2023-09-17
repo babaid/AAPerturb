@@ -29,6 +29,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
 
     //long long int prevResSeq{-1}, residueCounter{-1};
 
+    unsigned long long numAtoms{0}; 
     while (std::getline(pdbFile, line)) {
         if (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters) )  {
             Atom atom;
@@ -77,6 +78,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
                 chainMap->at(atom.chainID).emplace_back(std::move(newResidue));
                 //(*chainMap)[atom.chainID].push_back(newResidue);
             }
+            numAtoms++;
         }
     }
 

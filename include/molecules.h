@@ -38,14 +38,15 @@ struct Residue {
 
 
 //A class for later, not used RN but certainly cool
-class Protein{
+class PDBStructure{
     private:
-        std::map<char, std::vector<Residue>> chains;
-        unsigned long numAtoms;
+        std::unique_ptr<std::map<char, std::vector<Residue>>> chains=nullptr; //The actual structure
+        std::unique_ptr<std::map<char, unsigned int>> numResiduesPerChain = nullptr; // The number of residues on a chain.
+        unsigned long numAtoms{0}; // Number of atoms.
 
     public:
-        Protein(fs::path);
-        Protein(std::string);
+        PDBStructure(const fs::path, bool, bool, bool);
+        PDBStructure(const std::string);
 
     };
 

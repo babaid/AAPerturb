@@ -11,14 +11,18 @@
 #include<thread>
 #include<format>
 #include<limits>
+#include<chrono>
 #include<argparse/argparse.hpp>
 #include "pdbparser.h"
 #include "geometry.h"
 #include "montecarlo.h"
 #include "io.h"
 #include "fancy.h"
+#include "threadpool.h"
 
-namespace fs = std::filesystem;
+//Verbose mode is currently not thread safe. I need to use mutexes or something...
+using namespace std::chrono_literals;
+namespace fs = std::filesystem;       
 bool verbose=false;
 bool force = false;
 
@@ -144,50 +148,44 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         std::string fname = std::to_string(i) + ".pdb";
         fs::path out_path = out / fname;
 
-        if (!fs::exists(out_path) || force) {
+        if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
 
-            if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
+        std::pair<char , std::size_t>  res = chooseRandomResidue(interface_residue_indices);
 
-            std::pair<char , std::size_t>  res = chooseRandomResidue(interface_residue_indices);
+        if(verbose) std::cout << res.first << " : " << res.second << std::endl;
 
-            if(verbose) std::cout << res.first << " : " << res.second << std::endl;
-
-            Residue ref_residue(structure->at(res.first).at(res.second));
-            std::vector<std::string> comments;
+        Residue ref_residue(structure->at(res.first).at(res.second));
+        std::vector<std::string> comments;
 
 
 
-            if(verbose) std::cout << "Perturbing the chosen residue";
+        if(verbose) std::cout << "Perturbing the chosen residue";
 
-            //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
-            double rmsd = std::numeric_limits<double>::infinity();
-            try {
-                rmsd = rotateResidueSidechainRandomly(structure, res.first, res.second, verbose);
-            }
-            catch (...)
-            {
-                if(verbose)std::cout << "Something was not right at "  << filename <<std::endl;
-                continue;
-            }
-
-            if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
-
-            std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
-            std::string comment2 = std::format("RMSD: {}", rmsd);
-
-            comments.push_back(comment1);
-            comments.push_back(comment2);
-
-            if(verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
-
-            saveToPDBWithComments(out_path, structure, comments);
-            structure->at(res.first).at(res.second) = ref_residue;
+        //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
+        double rmsd = std::numeric_limits<double>::infinity();
+        try {
+            rmsd = rotateResidueSidechainRandomly(structure, res.first, res.second, verbose);
         }
-        else
+        catch (...)
         {
-            if(verbose) std::cout << "File already exists, skipping!" << std::endl;
+            if(verbose)std::cout << "Something was not right at "  << filename <<std::endl;
             continue;
         }
+
+        if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
+
+        std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
+        std::string comment2 = std::format("RMSD: {}", rmsd);
+
+        comments.push_back(comment1);
+        comments.push_back(comment2);
+
+        if(verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
+
+        saveToPDBWithComments(out_path, structure, comments);
+        structure->at(res.first).at(res.second) = ref_residue;
+        
+        
 
     }
 }
@@ -195,42 +193,43 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool force, const bool verbose) {
 
+
+    ThreadPool pool(batch_size); // Thread pool UwU
+    
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
 
-    if(batch_size == 1)
-    {
-        for (unsigned int i{0}; i<files.size(); i++) {
-            fs::path filedir{files[i].filename()};
-            filedir.replace_extension("");
-            fs::path out = outputdir / filedir;
-            fs::create_directory(out);
-            perturbRun(files[i], out, num_variations_per_protein, force, verbose);
-            if(!verbose) {Pbar.update(); Pbar.print();}
-        }
-    }
-    else{
+   
 
-        for (unsigned int i{0}; i<files.size(); i++) {
-            std::vector<std::thread> ThreadVector;
-            while ((i % batch_size != 0 || i == 0) && i < files.size()) {
+    for (unsigned int i{0}; i<files.size(); i++) {
 
-                //filesystem stuff
-                fs::path filedir{files[i].filename()};
-                filedir.replace_extension("");
-                fs::path out = outputdir / filedir;
-                fs::create_directory(out);
-                // filesystem stuff done
+        std::vector<std::future<void>> futures;
 
-                ThreadVector.emplace_back(perturbRun, files[i], out, num_variations_per_protein, force, verbose);
-                ++i;
+        //filesystem stuff
+        fs::path filedir{files[i].filename()};
+        filedir.replace_extension("");
+        fs::path out = outputdir / filedir;
+        if (fs::is_directory(out) && !force) {continue; if(!verbose)Pbar.update();}
+        fs::create_directory(out);
+
+        // filesystem stuff done
+
+
+
+        std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, force, verbose);
+        futures.emplace_back(std::move(result));
+        for (auto& future:futures){
+            auto status = future.wait_for(std::chrono::milliseconds(500));
+            if(status==std::future_status::timeout){
+                 std::cout << "Task timed out " << std::endl;
+                 pool.handleTimeout(future);
             }
-            for (auto &t: ThreadVector){    t.join();   if(!verbose) {Pbar.update(); Pbar.print();} }
-            ThreadVector.clear();
-            if (verbose) std::cout  << "Batch " << static_cast<int>(i / batch_size)
-                                    << "/" << (int) (files.size() / batch_size)
-                                    << " is done." << std::endl;
         }
+        
+        if (verbose) std::cout  << "Batch " << static_cast<int>(i / batch_size)
+                                << "/" << (int) (files.size() / batch_size)
+                                << " is done." << std::endl;
     }
+
 
 }

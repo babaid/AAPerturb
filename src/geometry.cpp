@@ -2,6 +2,7 @@
 #include<string>
 #include<iostream>
 #include<valarray>
+#include<array>
 #include "constants.h"
 #include "geometry.h"
 #include "molecules.h"
@@ -10,22 +11,19 @@
 void rotateCoordinatesAroundAxis(std::valarray<double>& vector, const std::valarray<double>& axis, const double angleInDegrees)
 {
     //std::valarray<double> axis = axis / std::sqrt(std::pow(axis[0], 2) + std::pow(axis[1], 2) + std::pow(axis[2], 2));
+    if(vector.size() != 3 && axis.size() != 3 ) throw std::out_of_range("Coordinates should be 3D.");
+    
     double angle = angleInDegrees * M_PI / 180.0;
     double cosAngle = std::cos(angle);
     double sinAngle = std::sin(angle);
 
     // Calculate the rotation matrix
-    double rotationMatrix[3][3] = {
-            {cosAngle + (1 - cosAngle) * std::pow(axis[0], 2),
-                    (1 - cosAngle) * axis[0] * axis[1] - sinAngle * axis[2],
-                    (1 - cosAngle) * axis[0] * axis[2] + sinAngle * axis[1]},
-            {(1 - cosAngle) * axis[1] * axis[0] + sinAngle * axis[2],
-                    cosAngle + (1 - cosAngle) * std::pow(axis[1], 2),
-                    (1 - cosAngle) * axis[1] * axis[2] - sinAngle * axis[0]},
-            {(1 - cosAngle) * axis[2] * axis[0] - sinAngle * axis[1],
-                    (1 - cosAngle) * axis[2] * axis[1] + sinAngle * axis[0],
-                    cosAngle + (1 - cosAngle) * std::pow(axis[2], 2)}
-    };
+    
+
+    std::array<std::array<double, 3>, 3> rotationMatrix{{   {cosAngle + (1 - cosAngle) * std::pow(axis[0], 2), (1 - cosAngle) * axis[0] * axis[1] - sinAngle * axis[2],(1 - cosAngle) * axis[0] * axis[2] + sinAngle * axis[1]},
+                                                            {(1 - cosAngle) * axis[1] * axis[0] + sinAngle * axis[2], cosAngle + (1 - cosAngle) * std::pow(axis[1], 2), (1 - cosAngle) * axis[1] * axis[2] - sinAngle * axis[0]},
+                                                            {(1 - cosAngle) * axis[2] * axis[0] - sinAngle * axis[1],(1 - cosAngle) * axis[2] * axis[1] + sinAngle * axis[0], cosAngle + (1 - cosAngle) * std::pow(axis[2], 2)} }};
+
 
     // Apply the rotation matrix to the input vector
     double oldX = vector[0];
@@ -70,33 +68,29 @@ std::vector<std::vector<double>> calculateDistanceMatrix(const std::unique_ptr<s
         for (auto const& residue1 : chainEntry1.second) {
             for (const Atom& atom1 : residue1.atoms) {
                 int otherIndex = 0;
-
                 for (const auto& chainEntry2 : *chainMap) {
                     for (auto const&  residue2 : chainEntry2.second) {
                         for (const Atom& atom2 : residue2.atoms) {
                             double distance = calculateDistance(atom1, atom2);
                             distanceMatrix[currentIndex][otherIndex] = distance;
-
-                            // Set diagonal elements to 10
                             if (currentIndex == otherIndex) {
-                                distanceMatrix[currentIndex][otherIndex] = 10.0;
+                                distanceMatrix.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
                             }
-
                             otherIndex++;
                         }
                     }
                 }
-
                 currentIndex++;
             }
         }
     }
-
     return distanceMatrix;
 }
 
 std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::unique_ptr<std::map<char, std::vector<Residue>>> & chainMap, const Residue& refres)
 {
+
+    //This needs to be moved to the class Protein as it can be stored at loading of a structure.
     int numAtoms = 0;
 
     // Calculate the total number of atoms in the chainMap
@@ -117,10 +111,10 @@ std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::unique_
                 int otherIndex = 0;
                 for (const Atom& atom2: refres.atoms) {
                     double distance = calculateDistance(atom1, atom2);
-                    distanceMatrix[currentIndex][otherIndex] = distance;
-                    // Set diagonal elements to 10
+                    distanceMatrix.at(currentIndex).at(otherIndex) = distance;
+                    // Set diagonal elements to max
                     if (residue1.resSeq == refres.resSeq && atom1 == atom2) {
-                        distanceMatrix[currentIndex][otherIndex] = 10;
+                        distanceMatrix.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
                     }
                     otherIndex++;
                 }
@@ -206,7 +200,6 @@ const std::map<char, std::vector<int>> findInterfaceResidues(const std::unique_p
 
     return interfaceResidues;
 }
-
 
 
 std::valarray<double> crossProduct(const std::valarray<double>& vector1, const std::valarray<double>& vector2) {
