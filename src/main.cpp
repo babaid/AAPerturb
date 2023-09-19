@@ -220,7 +220,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         futures.emplace_back(std::move(result));
         for (auto& future:futures){
         
-            auto status = future.wait_for((batch_size/1000)*5s); //y
+            auto status = future.wait_for(30s); //
             if(status==std::future_status::timeout){
                  std::cout << "Task timed out " << std::endl;
                  //pool.handleTimeout(future);
