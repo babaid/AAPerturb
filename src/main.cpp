@@ -219,7 +219,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
         futures.emplace_back(std::move(result));
         for (auto& future:futures){
-            auto status = future.wait_for(std::chrono::milliseconds(10000)); // We allow
+            auto status = future.wait_for(5s); //
             if(status==std::future_status::timeout){
                  std::cout << "Task timed out " << std::endl;
                  //pool.handleTimeout(future);

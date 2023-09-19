@@ -74,7 +74,14 @@ public:
 
         {
             std::unique_lock<std::mutex> lock(mutex);
-            tasks.emplace([task]() { (*task)(); });
+            tasks.emplace([task]() {    try{ 
+                                            (*task)(); 
+                                        }catch (const std::exception& ex){
+                                            std::cerr <<"Exception in thread: " << ex.what() << std::endl;
+                                        }catch (...){
+                                            std::cerr << "Unknown exception in thread" << std::endl;
+                                        }
+                                    });
         }
 
         // Notify one thread to execute the task
