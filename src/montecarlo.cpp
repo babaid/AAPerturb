@@ -79,9 +79,9 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
     double rmsd{0};
     unsigned int patience = 0;
     //we do not prefer GLY PRO and ALA. Maybe only for displacement
-    if(resName!="GLY" && resName!= "PRO" && resName!= "ALA") {
-        while (rmsd == 0 && patience < 3) {
+    if(resName!="GLY" && resName!= "PRO" && resName!= "ALA" && amino_acids::axes::AMINO_MAP.find(resName) != amino_acids::axes::AMINO_MAP.end() ) {
 
+        while (rmsd == 0 && patience < 3) {
 
             for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),

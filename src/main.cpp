@@ -214,17 +214,19 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
         // filesystem stuff done
 
-
+        std::cout << "Future size:" << futures.size() << std::endl;
 
         std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
         futures.emplace_back(std::move(result));
         for (auto& future:futures){
-            auto status = future.wait_for(5s); //
+        
+            auto status = future.wait_for((batch_size/1000)*5s); //y
             if(status==std::future_status::timeout){
                  std::cout << "Task timed out " << std::endl;
                  //pool.handleTimeout(future);
             }
         }
+        futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void>& f) {return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;}), futures.end());
         if (verbose) std::cout  << "Batch " << static_cast<int>(i / batch_size)
                                 << "/" << (int) (files.size() / batch_size)
                                 << " is done." << std::endl;
