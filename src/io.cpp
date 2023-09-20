@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 std::vector<fs::path> findInputFiles(const fs::path& path, const std::string extension)
 {
     std::vector<fs::path> input_files;
-    for (auto const& file : fs::directory_iterator{path})
+    for (auto const& file : fs::directory_iterator{fs::absolute(path)})
     {
         if(fs::path(file).extension() == extension)
         {

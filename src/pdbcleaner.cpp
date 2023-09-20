@@ -24,6 +24,10 @@ int main(int argc, char *argv[]) {
     program.add_argument("-o", "--output-dir")
             .required()
             .help("The directory containing the output PDB files which are cleaned.");
+    program.add_argument("-n", "--num_chains")
+            .scan<'d', std::size_t >()
+            .default_value(std::size_t(2))
+            .help("Minimum number of chains required");
     program.add_argument("-f", "--force")
             .help("Force recreation of already existent files in the output directory. Treat with care.")
             .default_value(false)
@@ -65,13 +69,15 @@ int main(int argc, char *argv[]) {
         force=true;
     }
 
-    auto files = findInputFiles(input_dir);
+    int num_chains = program.get<std::size_t >("-n");
+
+    auto files = findInputFiles(input_dir, ".pdb");
     ProgressBar bar(files.size());
     for (std::size_t i{0}; i<files.size();++i) {
         bar.update();
         if (!fs::exists(output_dir/files[i].filename()) || force) {
             auto clean_structure = parsePDBToBeCleaned(files[i]);
-            if(clean_structure->size()>=2) {
+            if(clean_structure->size()>=num_chains) {
                 std::vector<std::string> comments;
                 comments.push_back("This file was previously reindexed and the waters and the hydrogens were removed");
                 saveToPDBWithComments(output_dir / files[i].filename(), clean_structure, comments);
