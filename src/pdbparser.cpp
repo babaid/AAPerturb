@@ -208,7 +208,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>>  parsePDBToBeCleaned(const
 
                 //If deprotonate then we skip
                 if ((atom.element == "H" && deprotonate)) continue;
-
+                if ((atom.altLoc != ' ')) continue;
                 //My head hurts thinking about how many problems this cause me in the previous months.
 
                 atom.serial = ++atomcntr;
