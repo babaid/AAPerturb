@@ -175,7 +175,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
         if(verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
 
-        if (rmsd == 0){
+        if (rmsd == 0.0){
             perturbcntr--; continue;
         } else {
             perturbcntr++;
