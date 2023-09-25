@@ -146,7 +146,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
     while(perturbcntr<num_perturbations) {
 
-        std::string fname = std::to_string(i) + ".pdb";
+        std::string fname = std::to_string(perturbcntr) + ".pdb";
         fs::path out_path = out / fname;
 
         if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
