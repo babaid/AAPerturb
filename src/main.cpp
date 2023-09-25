@@ -223,7 +223,8 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         for (auto& future:futures){
             auto status = future.wait_for(2s); //
             if(status==std::future_status::timeout){
-                 std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
+                 //std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
+
             }
         }
         std::cout << std::flush;
@@ -234,7 +235,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                                 << " is done." << std::endl;
 
     }
-
+    std::cout << std::endl << "We are done" << std::endl;
     futures.clear(); //Get rid of everything
 
 }
