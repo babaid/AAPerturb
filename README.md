@@ -66,18 +66,17 @@ make -jN iffind
 
 ### Cleaning of PDB files.
 
-To produce output that is useful, a preprocessing step may be required, which includes removal of waters, deprotonation and residue renumbering.
-This is crucial to the main program, as the less atoms there are the less expensive calculations get, and I use the most simple conversion between residue numbers in the PDB files and residues in my data structures, which is a shift of the indices to start at 0.
-So the residue numbering has to start in each chain at 1 and there also shouldnt be any alternate locations for amino acids (this caused me too many headaches when I forgot about them). 
-There is a pdbcleaner available, which takes a batch of pdb files and saves their cleaned versions in some predefined directory.
-It also leaves some remarks in the cleaned file, that people who look at it know that it was modified.
-The pdbcleaner program can be built by:
-
+To produce output that is useful, a preprocessing step may be required, which deals with removal of waters, deprotonation, removal of alternate locations, removal of insertions and reindexing atoms and residues.
+This is crucial to the main program to run without bugs and random errors, and also the less atoms there are the less expensive calculations get.
+The residue numbering has to start in each chain at 1.
+The part of cleaning the PDBs seemed easier to do with python with the already available PandasPDB package. The script is located at scripts/pdbcleaner.py.
+It needs following packages: biopandas, pandas, numpy, alive_progress
+You can run it as follows:
 ```
-make -jN pdbcleaner
+python pdbcleaner.py -i [INPUT_DIR/FILE] -o [OUTPUT_DIR/FILE]
 ```
 
-
+It is going to clean all the files and save them. Specifying the input dir to be the same as the output dir is prohibited due to the safety of your dataset.
 
 
 
