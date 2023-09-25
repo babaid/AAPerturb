@@ -199,7 +199,6 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
-
     Pbar.print();
     for (unsigned int i{0}; i<files.size(); i++) {
 
@@ -213,17 +212,17 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
         // filesystem stuff done
 
-        //std::cout << "Future size:" << futures.size() << std::endl;
+
 
         std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
         futures.emplace_back(std::move(result));
         for (auto& future:futures){
             auto status = future.wait_for(2s); //
             if(status==std::future_status::timeout){
-                 std::cout << " A task timed out " << std::endl;
-                 //pool.handleTimeout(future);
+                 std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
             }
         }
+        std::cout << std::flush;
         if (!verbose) {Pbar.update(); Pbar.print();};
         futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void>& f) {return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;}), futures.end());
         if (verbose) std::cout  << "Batch " << static_cast<int>(i / batch_size)
