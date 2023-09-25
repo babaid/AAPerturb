@@ -142,8 +142,9 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         std::cout<< std::endl;
     }
 
+    unsigned perturbcntr{0};
 
-    for (unsigned int i = 0; i < num_perturbations; ++i) {
+    while(perturbcntr<num_perturbations) {
 
         std::string fname = std::to_string(i) + ".pdb";
         fs::path out_path = out / fname;
@@ -172,21 +173,24 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
             continue;
         }
 
-        if(verbose) std::cout << "Perturbation succesfull, per-residue RMSD: " << rmsd << std::endl;
+        if(verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
 
-        std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
-        std::string comment2 = std::format("RMSD: {}", rmsd);
+        if (rmsd == 0){
+            perturbcntr--; continue;
+        } else {
+            perturbcntr++;
 
-        comments.push_back(comment1);
-        comments.push_back(comment2);
+            std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
+            std::string comment2 = std::format("RMSD: {}", rmsd);
 
-        if(verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
+            comments.push_back(comment1);
+            comments.push_back(comment2);
 
-        saveToPDBWithComments(out_path, structure, comments);
-        structure->at(res.first).at(res.second) = ref_residue;
-        
-        
+            if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
 
+            saveToPDBWithComments(out_path, structure, comments);
+            structure->at(res.first).at(res.second) = ref_residue;
+        }
     }
 }
 
