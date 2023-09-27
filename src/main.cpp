@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
     std::size_t batch_size = program.get<std::size_t>("-b");
 
 
-    //auto pdb = parsePDB("../_out/5d5m.pdb", verbose=true);
+    //auto pdb = parsePDB("../_out/1qse.pdb", verbose=true);
     /*for (auto& chain:*pdb)
     {
         std::cout << chain.first << ":" << chain.second.size() << std::endl;
@@ -126,6 +126,20 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         std::cout << "Opening " << filename << " for perturbation." << std::endl;
     }
     std::unique_ptr<std::map<char, std::vector<Residue>>>  structure = parsePDB(filename);
+    for (auto chain: *structure)
+    {
+        for(auto& res: chain.second)
+        {
+            for(auto & atom: res.atoms)
+            {
+                std::cout << "Atom idx: " << atom.serial << std::endl;
+                //std::cout << "Element: " << atom.element << std::endl;
+                //std::cout << "Coords: " << atom.coords[0] << std::endl;
+                //std::cout  << atom.coords[1]<< std::endl << atom.coords[2] << std::endl;
+                std::cout <<"Name: "<< atom.name << std::endl;
+            }
+        }
+    }
     if (verbose)
     {
         auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};

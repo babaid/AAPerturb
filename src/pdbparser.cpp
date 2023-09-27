@@ -38,9 +38,11 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
             atom.coords= {std::stod(line.substr(30, 8)), std::stod(line.substr(38, 8)), std::stod(line.substr(46, 8))};
             atom.occupancy = std::stod(line.substr(54, 6));
             atom.tempFactor = std::stod(line.substr(60, 6));
-            atom.element = line.substr(76, 2);
+            atom.element = line.substr(76, 4);
+
 
             // Remove whitespace from the atom name
+            atom.element.erase(std::remove_if(atom.element.begin(), atom.element.end(), ::isspace), atom.element.end());
             atom.name.erase(std::remove_if(atom.name.begin(), atom.name.end(), ::isspace), atom.name.end());
 
             // Check if this chain is already in the map
