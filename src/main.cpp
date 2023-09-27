@@ -28,7 +28,7 @@ bool force = false;
 
 void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool, const bool);
 void perturbRun(fs::path, fs::path, unsigned int, const bool);
-
+std::size_t number_of_files_in_directory(fs::path path);
 int main(int argc, char *argv[]) {
 
     argparse::ArgumentParser program("aaperturb");
@@ -156,7 +156,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         std::cout<< std::endl;
     }
 
-    unsigned perturbcntr{0};
+    std::size_t perturbcntr{number_of_files_in_directory(out)};
 
     while(perturbcntr<num_perturbations) {
 
@@ -225,8 +225,17 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         fs::path filedir{files[i].filename()};
         filedir.replace_extension("");
         fs::path out = outputdir / filedir;
-        if (fs::is_directory(out) && !force) {if(!verbose){Pbar.update(); Pbar.print();} continue; }
-        fs::create_directory(out);
+
+        if (fs::is_directory(out) && !force) {
+            if (!verbose) {
+                Pbar.update();
+                Pbar.print();
+            }
+
+            if(number_of_files_in_directory(out) == num_variations_per_protein) continue;
+        }
+        else fs::create_directory(out);
+
 
         // filesystem stuff done
 
@@ -234,22 +243,36 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
         std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
         futures.emplace_back(std::move(result));
-        for (auto& future:futures){
+        for (auto &future: futures) {
             auto status = future.wait_for(2s); //
-            if(status==std::future_status::timeout){
-                 //std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
+            if (status == std::future_status::timeout) {
+                //std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
 
             }
         }
         std::cout << std::flush;
-        if (!verbose) {Pbar.update(); Pbar.print();};
-        futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void>& f) {return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;}), futures.end());
-        if (verbose) std::cout  << "Batch " << static_cast<int>(i / batch_size)
-                                << "/" << (int) (files.size() / batch_size)
-                                << " is done." << std::endl;
+        if (!verbose) {
+            Pbar.update();
+            Pbar.print();
+        };
+        futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
+            return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+        }), futures.end());
+        if (verbose)
+            std::cout << "Batch " << static_cast<int>(i / batch_size)
+                      << "/" << (int) (files.size() / batch_size)
+                      << " is done." << std::endl;
 
     }
     std::cout << std::endl << "We are done" << std::endl;
     futures.clear(); //Get rid of everything
 
+
+}
+
+std::size_t number_of_files_in_directory(fs::path path)
+{
+    using std::filesystem::directory_iterator;
+    using fp = bool (*)( const std::filesystem::path&);
+    return std::count_if(directory_iterator(path), directory_iterator{}, (fp)std::filesystem::is_regular_file);
 }
