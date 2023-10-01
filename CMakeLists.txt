@@ -60,6 +60,8 @@ add_executable(run-benchmarks
         include/constants.h
         src/geometry.cpp
         src/pdbparser.cpp
+        src/montecarlo.cpp
+        include/montecarlo.h
         include/io.h
         src/io.cpp
         include/molecules.h

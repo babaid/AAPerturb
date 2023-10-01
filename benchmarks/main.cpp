@@ -16,6 +16,10 @@ int main(int argc, char *argv[]){
             .required()
             .help("The directory containing the input PDB files for the benchmarks.");
 
+    program.add_argument("-o", "--output-dir")
+            .required()
+            .help("The directory containing the output PDB files for the benchmarks.");
+
     try {
         program.parse_args(argc, argv);
     }
@@ -36,9 +40,19 @@ int main(int argc, char *argv[]){
             std::exit(1);
         }
     }
-    std::cout << "Directory: " << input_dir << std::endl;
+    if (auto ifn = program.present("-o"))
+    {
+        output_dir = *ifn;
+        if(!fs::is_directory(output_dir))
+        {
+            fs::create_directory(output_dir);
+            std::cout << "The directory provided does not exist. Creating..." << std::endl;
+        }
 
-    benchmark_pdbparser(input_dir, 10);
+    }
+
+
+    benchmark_pdbparser(input_dir, output_dir, 1);
 
     return 0;
 }

@@ -30,16 +30,33 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
         if (line.compare(0, 4, "ATOM") == 0 || ((line.compare(0, 6, "HETATM") == 0) && !excludewaters) )  {
             Atom atom;
             atom.serial = std::stoi(line.substr(6, 5));
+
             atom.name = line.substr(12, 4);
             atom.altLoc = line[16];
             atom.resName = line.substr(17, 3);
             atom.chainID = line[21];
+            if(!atom.chainID) throw;
             atom.resSeq = std::stoi(line.substr(22, 4))-1;
-            atom.coords= {std::stod(line.substr(30, 8)), std::stod(line.substr(38, 8)), std::stod(line.substr(46, 8))};
-            atom.occupancy = std::stod(line.substr(54, 6));
-            atom.tempFactor = std::stod(line.substr(60, 6));
-            atom.element = line.substr(76, 4);
 
+            try {
+                atom.coords = {std::stod(line.substr(30, 8)), std::stod(line.substr(38, 8)),
+                               std::stod(line.substr(46, 8))};
+            }
+            catch (...)
+            {
+                std::cerr << "Atom coordinates obscured" << std::endl;
+                throw;
+            }
+            try {
+                atom.occupancy = std::stod(line.substr(54, 6));
+                atom.tempFactor = std::stod(line.substr(60, 6));
+            }
+            catch(...)
+            {
+                std::cerr << "Occupancy/Tempfactor obscured" << std::endl;
+            }
+
+            atom.element = line.substr(76, 4);
 
             // Remove whitespace from the atom name
             atom.element.erase(std::remove_if(atom.element.begin(), atom.element.end(), ::isspace), atom.element.end());

@@ -7,7 +7,7 @@ namespace fs=std::filesystem;
 #ifndef AAPERTURB_BENCHMARKS_H
 #define AAPERTURB_BENCHMARKS_H
 
-void benchmark_pdbparser(fs::path&, unsigned);
+void benchmark_pdbparser(fs::path&,fs::path&, unsigned);
 
 
 #endif
