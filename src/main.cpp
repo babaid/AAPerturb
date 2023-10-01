@@ -109,7 +109,10 @@ int main(int argc, char *argv[]) {
             for (auto &el: chain.second) std::cout << el.resSeq << std::endl;
         }
     }*/
+
+    std::cout<< "Starting"<< std::endl;
     createdataset(input_dir, output_dir, num_variations, batch_size, force, verbose);
+    std::cout << "Dataset creation finished" << std::endl;
     return 0;
 }
 
@@ -198,63 +201,58 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size,  const bool force, const bool verbose) {
 
-    std::cout << "Creating Threadpool" << std::endl;
+    //Batched threadpool. We wait calmly for each thread to finish, when they finished, we empty the queue of tasks, and start the next iteration.
 
     ThreadPool pool(batch_size); // Thread pool UwU
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
     Pbar.print();
-    for (unsigned int i{0}; i<files.size(); i++) {
+    for (unsigned int i{0}; i<files.size();++i) {
+        while (i % batch_size != 0 || i == 0) {
+            //filesystem stuff
+            fs::path filedir{files[i].filename()};
+            filedir.replace_extension("");
+            fs::path out = outputdir / filedir;
+
+            if (fs::is_directory(out) && !force) {
+                if (!verbose) {
+                    Pbar.update();
+                    Pbar.print();
+                }
+
+                if (number_of_files_in_directory(out) == num_variations_per_protein) continue;
+            } else fs::create_directory(out);
 
 
-        //filesystem stuff
-        fs::path filedir{files[i].filename()};
-        filedir.replace_extension("");
-        fs::path out = outputdir / filedir;
+            // filesystem stuff done
 
-        if (fs::is_directory(out) && !force) {
+            std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
+            std::this_thread::sleep_for(10s);
+            futures.emplace_back(std::move(result));
+            for (auto &future: futures) {
+                auto status = future.wait_for(1s); //
+                if (status == std::future_status::timeout) {
+                    std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
+                }
+            }
+            std::cout << "Future vec size: " << futures.size() << std::endl;
+            std::cout << std::flush;
             if (!verbose) {
                 Pbar.update();
                 Pbar.print();
-            }
-
-            if(number_of_files_in_directory(out) == num_variations_per_protein) continue;
+            };
+            futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
+                return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+            }), futures.end());
+            if (verbose)
+                std::cout << "Batch " << static_cast<int>(i / batch_size)
+                          << "/" << (int) (files.size() / batch_size)
+                          << " is done." << std::endl;
+        //futures.clear(); //Get rid of everything
+        ++i;
         }
-        else fs::create_directory(out);
-
-
-        // filesystem stuff done
-
-
-
-        std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
-        futures.emplace_back(std::move(result));
-        for (auto &future: futures) {
-            auto status = future.wait_for(2s); //
-            if (status == std::future_status::timeout) {
-                //std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
-
-            }
-        }
-        std::cout << std::flush;
-        if (!verbose) {
-            Pbar.update();
-            Pbar.print();
-        };
-        futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
-            return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
-        }), futures.end());
-        if (verbose)
-            std::cout << "Batch " << static_cast<int>(i / batch_size)
-                      << "/" << (int) (files.size() / batch_size)
-                      << " is done." << std::endl;
-
     }
-    std::cout << std::endl << "We are done" << std::endl;
-    futures.clear(); //Get rid of everything
-
-
 }
 
 std::size_t number_of_files_in_directory(fs::path path)

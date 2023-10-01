@@ -79,6 +79,11 @@ python pdbcleaner.py -i [INPUT_DIR/FILE] -o [OUTPUT_DIR/FILE]
 It is going to clean all the files and save them. Specifying the input dir to be the same as the output dir is prohibited due to the safety of your dataset.
 
 
+### Benchmarks
+
+By building run-benchmarks, you can measure the execution time for a given test dataset. Obviously the interface finding part
+takes the most time, approximately 1s for a structure. Perturbation can take also longer if there are always clashes.
+Once I figure out some performance issues and maybe move graph creation also to my code instead of doing it in python, dataset creation should be a piece of cake in terms of speed.
 
 
 

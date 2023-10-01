@@ -11,8 +11,9 @@
 #include<chrono>
 #include<string>
 #include<vector>
-
 #include "benchmarks.h"
+
+
 namespace fs = std::filesystem;
 
 void benchmark_pdbparser(fs::path& input_path,fs::path& output_path, unsigned cnt)
@@ -73,13 +74,13 @@ void benchmark_pdbparser(fs::path& input_path,fs::path& output_path, unsigned cn
     iffind_duration/=(double)cnt;
     reschoose_duration/=(double)cnt;
     resrot_duration/=(double)cnt;
+
+
     std::cout << "Overall avg. time for parsing a PDB file: " << read_duration << std::endl;
     std::cout << "Overall avg. time for saving a PDB file: " << write_duration << std::endl;
     std::cout << "Overall avg. time for finding the interfaces: " << iffind_duration << std::endl;
     std::cout << "Overall avg. time for choosing a residue: " << reschoose_duration << std::endl;
     std::cout << "Overall avg. time for rotating a residue: " << resrot_duration << std::endl;
-
-
 
 
 
