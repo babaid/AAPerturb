@@ -8,10 +8,18 @@ parser.add_argument('-i', '--input_dir')
 parser.add_argument('-o', '--output_dir')
 
 import os
+import pandas as pd
 from biopandas.pdb import PandasPdb
-from utils import save_to_pdb
 from alive_progress import alive_bar
 import numpy as np
+
+def save_to_pdb(structure:pd.DataFrame, path:str)->None:
+    """
+    Save extracted segments to a pdb file
+    """
+    pdb_saver = PandasPdb()
+    pdb_saver.df["ATOM"] = structure
+    pdb_saver.to_pdb(path, records = ["ATOM"])
 
 def clean_pdb(file:str, output_file:str):
     if file.endswith(".pdb"):

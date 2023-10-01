@@ -5,7 +5,7 @@
 executables/
 /cmake-build-debug
 _out/
-_temp/
+test/data/_temp/
 _**/
 .vscode/
 # Compiled Object files
