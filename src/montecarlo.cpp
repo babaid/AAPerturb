@@ -70,6 +70,7 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
                         // the greater the angle range gets, the greater should be the clash cutoff
                         // optionally we could differentiate between types of atoms at clashes, but is it worth it?
     std::uniform_real_distribution<double> dist( -angles, angles);
+
     Residue ref_res(structure->at(chain).at(resNum));
     std::string resName = structure->at(chain).at(resNum).resName;
     ref_res = structure->at(chain).at(resNum);
@@ -77,45 +78,43 @@ double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector
 
     //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
     double rmsd{0};
+
     unsigned int patience = 0;
     //we do not prefer GLY PRO and ALA. Maybe only for displacement
     if(resName!="GLY" && resName!= "PRO" && resName!= "ALA" && amino_acids::axes::AMINO_MAP.find(resName) != amino_acids::axes::AMINO_MAP.end() ) {
 
-        while (rmsd == 0 && patience < 3) {
 
-            for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
-                auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
-                                                 amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
-                std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
-                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index;
+        for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
+            auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
+                                             amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
+            std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
+            auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index;
 
-                std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
-                        resName).end());
-                std::valarray<double> rot_coords = findRotationAxis(structure->at(chain).at(resNum), axis);
-                double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
-                double angle = dist(thread_rng);
+            std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
+                    resName).end());
+            std::valarray<double> rot_coords = findRotationAxis(structure->at(chain).at(resNum), axis);
+            double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
+            double angle = dist(thread_rng);
 
-                for (Atom& atom: structure->at(chain).at(resNum).atoms)
-                    if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
-                        //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
-                        rotateCoordinatesAroundAxis(atom.coords, rot_coords / vec_norm, angle);
+            for (Atom& atom: structure->at(chain).at(resNum).atoms)
+                if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
+                    //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
+                    rotateCoordinatesAroundAxis(atom.coords, rot_coords / vec_norm, angle);
 
-                    }
-            }
-
-                std::vector<std::vector<double>> distance_matrix =
-                        calculateLocalDistanceMatrix(structure, structure->at(chain).at(resNum));
-
-                if (detect_clashes(distance_matrix, 0.21)) {
-                    if (verbose) std::cout << "Atoms clashed, retrying..." << std::endl;
-                    structure->at(chain).at(resNum) = ref_res;
-                    patience++;
-                    angles = angles / 10;
-                    std::uniform_real_distribution<double> dist(-angles, angles);
-                    continue;
-                } else patience = 0;
-                rmsd = calculateRMSD(ref_res.atoms, structure->at(chain).at(resNum).atoms);
+                }
         }
+
+            std::vector<std::vector<double>> distance_matrix =
+                    calculateLocalDistanceMatrix(structure, structure->at(chain).at(resNum));
+
+            if (detect_clashes(distance_matrix, 0.21)) {
+                if (verbose) std::cout << "Atoms clashed, retrying..." << std::endl;
+                structure->at(chain).at(resNum) = ref_res;
+                angles = angles / 10;
+                std::uniform_real_distribution<double> dist(-angles, angles);
+            }
+            rmsd = calculateRMSD(ref_res.atoms, structure->at(chain).at(resNum).atoms);
+
     }
     return rmsd;
 }

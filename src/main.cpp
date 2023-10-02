@@ -179,11 +179,11 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         }
 
         if(verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
-        perturbcntr++;
-        //if (rmsd == 0.0){
-        //    perturbcntr--; continue;
-        //} else {
-        //    perturbcntr++;
+        if (rmsd == 0.0){
+            perturbcntr--; continue;
+        } else {
+            perturbcntr++;
+        }
 
             std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
             std::string comment2 = std::format("RMSD: {}", rmsd);
@@ -224,14 +224,14 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                 }
                 if (number_of_files_in_directory(out) == num_variations_per_protein) {}//Pbar.update();}
             } else fs::create_directory(out);
+
+
             // filesystem stuff done
-
-
             std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
             futures.emplace_back(std::move(result));
 
-
             if (!verbose) {
+
                 Pbar.update();
                 std::string msg = std::to_string(static_cast<int>(i / batch_size + 1 )) + '/' +
                                   std::to_string((int) (files.size() / batch_size + 1));
@@ -249,7 +249,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         //Not sure if this is good practice but it avoids enqueuing too much stuff
         if(futures.size()>batch_size){
             while(futures.size()!=0) {
-                std::this_thread::sleep_for(5s); //wait for five seconds so tasks can finish
+                std::this_thread::sleep_for(1s); //wait for five seconds so tasks can finish
                 futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
                     return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
                 }), futures.end()); // delete finished tasks
