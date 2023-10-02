@@ -219,7 +219,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                 if (!verbose) {
                     Pbar.update();
                     std::string msg = std::to_string(static_cast<int>(i / batch_size)) + '/' + std::to_string((int) (files.size() / batch_size));
-                    Pbar.print("");
+                    Pbar.print("0/0");
                 }
 
                 if (number_of_files_in_directory(out) == num_variations_per_protein) continue;
