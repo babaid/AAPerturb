@@ -11,6 +11,7 @@
 #include<thread>
 #include<format>
 #include<limits>
+#include<cmath>
 #include<chrono>
 #include<argparse/argparse.hpp>
 #include "pdbparser.h"
@@ -208,65 +209,43 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
     Pbar.print("0/0");
-    for (unsigned int i{0}; i<files.size();++i) {
-        while (i % batch_size != 0 || i == 0) {
+    for (unsigned int batch_start{0}; batch_start < files.size();batch_start+=batch_size) {
+        int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));
+        for(unsigned int i{batch_start}; i<batch_end;++i){
             //filesystem stuff
             fs::path filedir{files[i].filename()};
             filedir.replace_extension("");
             fs::path out = outputdir / filedir;
-
-            if (fs::is_directory(out) && !force) {
+            if (fs::is_directory(out)) {
                 if (!verbose) {
-                    Pbar.update();
-                    try {
-                        std::string msg = std::to_string(static_cast<int>(i / batch_size)) + '/' +
-                                          std::to_string((int) (files.size() / batch_size));
-                        Pbar.print(msg);
-                    }
-                    catch(...){std::cout << "hmmm"<< std::endl;}
-
-                }
-
-                if (number_of_files_in_directory(out) == num_variations_per_protein) continue;
-            } else fs::create_directory(out);
-
-
-            // filesystem stuff done
-
-            std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
-            std::this_thread::sleep_for(1s);
-            futures.emplace_back(std::move(result));
-            //for (auto &future: futures) {
-             //   auto status = future.wait_for(1s); //
-              //  if (status == std::future_status::timeout) {
-               //     std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
-                //}
-            //}
-            if (futures.size()>batch_size){std::cout << "Something is off. Aborting..." << std::endl; std::exit(1);}
-            //std::cout << "Future vec size: " << futures.size() << std::endl;
-            std::cout << std::flush;
-            if (!verbose) {
-                Pbar.update();
-                try {
-                    std::string msg = std::to_string(static_cast<int>(i / batch_size)) + '/' +
-                                      std::to_string((int) (files.size() / batch_size));
+                    std::string msg = std::to_string(static_cast<int>(i / batch_size + 1)) + '/' +
+                                      std::to_string((int) (files.size() / batch_size + 1));
                     Pbar.print(msg);
                 }
-                catch(...){std::cout << "hmmm"<< std::endl;}
-            }
+                if (number_of_files_in_directory(out) == num_variations_per_protein) {Pbar.update();continue;}
+            } else fs::create_directory(out);
+            // filesystem stuff done
+
+
+            std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
+            futures.emplace_back(std::move(result));
             futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
                 return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
             }), futures.end());
-            if (verbose)
-                std::cout << "Batch " << static_cast<int>(i / batch_size)
-                          << "/" << (int) (files.size() / batch_size)
-                          << " is done." << std::endl;
-        //futures.clear(); //Get rid of everything
-        ++i;
+
+            if (!verbose) {
+                Pbar.update();
+                std::string msg = std::to_string(static_cast<int>(i / batch_size + 1 )) + '/' +
+                                  std::to_string((int) (files.size() / batch_size + 1));
+                Pbar.print(msg);
+            } else  std::cout << "Batch " << static_cast<int>(i / batch_size + 1 )
+                              << "/" << (int) (files.size() / batch_size + 1)
+                              << " is done." << std::endl;
         }
         std::this_thread::sleep_for(10s);
     }
 }
+
 
 std::size_t number_of_files_in_directory(fs::path path)
 {
