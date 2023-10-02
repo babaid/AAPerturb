@@ -207,7 +207,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
-    Pbar.print();
+    Pbar.print("");
     for (unsigned int i{0}; i<files.size();++i) {
         while (i % batch_size != 0 || i == 0) {
             //filesystem stuff
@@ -218,7 +218,8 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             if (fs::is_directory(out) && !force) {
                 if (!verbose) {
                     Pbar.update();
-                    Pbar.print();
+                    std::string msg = std::to_string(static_cast<int>(i / batch_size)) + '/' + std::to_string((int) (files.size() / batch_size));
+                    Pbar.print("");
                 }
 
                 if (number_of_files_in_directory(out) == num_variations_per_protein) continue;
@@ -230,17 +231,18 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
             std::this_thread::sleep_for(10s);
             futures.emplace_back(std::move(result));
-            for (auto &future: futures) {
-                auto status = future.wait_for(1s); //
-                if (status == std::future_status::timeout) {
-                    std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
-                }
-            }
+            //for (auto &future: futures) {
+             //   auto status = future.wait_for(1s); //
+              //  if (status == std::future_status::timeout) {
+               //     std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
+                //}
+            //}
             std::cout << "Future vec size: " << futures.size() << std::endl;
             std::cout << std::flush;
             if (!verbose) {
                 Pbar.update();
-                Pbar.print();
+                std::string msg = std::to_string(static_cast<int>(i / batch_size)) + '/' + std::to_string((int) (files.size() / batch_size));
+                Pbar.print(msg);
             };
             futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
                 return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;

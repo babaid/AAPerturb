@@ -8,12 +8,12 @@
 
 #ifndef AA_PERTURB_FANCY_H
 #define AA_PERTURB_FANCY_H
-
+#include<string>
 class ProgressBar {
 public:
     ProgressBar(int neededprogress);
     void update();
-    void print();
+    void print(std::string);
     std::string firstPartOfpBar = "[",
                 lastPartOfpBar = "]",
                 pBarFiller = "#",

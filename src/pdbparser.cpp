@@ -44,6 +44,7 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
             }
             catch (...)
             {
+
                 std::cerr << "Atom coordinates obscured" << std::endl;
                 throw;
             }
@@ -56,8 +57,13 @@ std::unique_ptr<std::map<char, std::vector<Residue>>> parsePDB(const  fs::path& 
                 std::cerr << "Occupancy/Tempfactor obscured" << std::endl;
             }
 
-            atom.element = line.substr(76, 4);
-
+            try {
+                atom.element = line.substr(76, 4);
+            }
+            catch(...)
+            {
+                std::cerr << "Atom element obscured" << std::endl;
+            }
             // Remove whitespace from the atom name
             atom.element.erase(std::remove_if(atom.element.begin(), atom.element.end(), ::isspace), atom.element.end());
             atom.name.erase(std::remove_if(atom.name.begin(), atom.name.end(), ::isspace), atom.name.end());

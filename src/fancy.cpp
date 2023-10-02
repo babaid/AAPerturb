@@ -4,6 +4,7 @@
 //
 //
 #include<iostream>
+#include<string>
 #include "fancy.h"
 
 // https://github.com/GregoryConrad/pBar/tree/master
@@ -16,7 +17,7 @@ void ProgressBar::update() {
     amountOfFiller = (int)((currentProgress / neededProgress)*(double)pBarLength);
 }
 
-void ProgressBar::print() {
+void ProgressBar::print(std::string message) {
     currUpdateVal %= pBarUpdater.length();
     std::cout << "\r" //Bring cursor to start of line
               << firstPartOfpBar; //Print out first part of pBar
@@ -28,7 +29,8 @@ void ProgressBar::print() {
         std::cout << " ";
     }
     std::cout << lastPartOfpBar //Print out last part of progress bar
-              << " (" << (int)(100*(currentProgress/neededProgress)) << "%)" //This just prints out the percent
+              << " (" << (int)(100*(currentProgress/neededProgress)) << "% | " << message << ")"
+              //This just prints out the percent
               << std::flush;
     currUpdateVal += 1;
 }
