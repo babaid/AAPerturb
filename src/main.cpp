@@ -207,7 +207,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
-    Pbar.print("");
+    Pbar.print("0/0");
     for (unsigned int i{0}; i<files.size();++i) {
         while (i % batch_size != 0 || i == 0) {
             //filesystem stuff
@@ -219,7 +219,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                 if (!verbose) {
                     Pbar.update();
                     std::string msg = std::to_string(static_cast<int>(i / batch_size)) + '/' + std::to_string((int) (files.size() / batch_size));
-                    Pbar.print("0/0");
+                    Pbar.print(msg);
                 }
 
                 if (number_of_files_in_directory(out) == num_variations_per_protein) continue;
