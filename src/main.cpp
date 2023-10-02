@@ -179,11 +179,11 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
         }
 
         if(verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
-
-        if (rmsd == 0.0){
-            perturbcntr--; continue;
-        } else {
-            perturbcntr++;
+        perturbcntr++;
+        //if (rmsd == 0.0){
+        //    perturbcntr--; continue;
+        //} else {
+        //    perturbcntr++;
 
             std::string comment1 = std::format("MUTATION: /{}:{}", res.first, std::to_string(ref_residue.resSeq));
             std::string comment2 = std::format("RMSD: {}", rmsd);
@@ -195,7 +195,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 
             saveToPDBWithComments(out_path, structure, comments);
             structure->at(res.first).at(res.second) = ref_residue;
-        }
+
     }
 }
 
@@ -203,7 +203,7 @@ void perturbRun(fs::path filename, fs::path out,const unsigned int num_perturbat
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size,  const bool force, const bool verbose) {
 
     //Batched threadpool. We wait calmly for each thread to finish, when they finished, we empty the queue of tasks, and start the next iteration.
-
+    // I strictly want to enqueue just as many tasks as the batch size allows, avoiding any type of overflows
     ThreadPool pool(batch_size); // Thread pool UwU
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
@@ -222,16 +222,14 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                                       std::to_string((int) (files.size() / batch_size + 1));
                     Pbar.print(msg);
                 }
-                if (number_of_files_in_directory(out) == num_variations_per_protein) {Pbar.update();continue;}
+                if (number_of_files_in_directory(out) == num_variations_per_protein) {}//Pbar.update();}
             } else fs::create_directory(out);
             // filesystem stuff done
 
 
             std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
             futures.emplace_back(std::move(result));
-            futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
-                return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
-            }), futures.end());
+
 
             if (!verbose) {
                 Pbar.update();
@@ -242,7 +240,21 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                               << "/" << (int) (files.size() / batch_size + 1)
                               << " is done." << std::endl;
         }
-        std::this_thread::sleep_for(10s);
+        std::this_thread::sleep_for(std::chrono::seconds(batch_size)); //longest operation takes about a second
+
+        futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
+            return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+        }), futures.end());
+
+        //Not sure if this is good practice but it avoids enqueuing too much stuff
+        if(futures.size()>batch_size){
+            while(futures.size()!=0) {
+                std::this_thread::sleep_for(5s); //wait for five seconds so tasks can finish
+                futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
+                    return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+                }), futures.end()); // delete finished tasks
+            }
+        } //wait for some threads to finish, so we dont overload
     }
 }
 
