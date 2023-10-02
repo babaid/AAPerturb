@@ -237,7 +237,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
                //     std::cout << " A task took longer then expected but that's OK. No Pressure." << std::endl;
                 //}
             //}
-            std::cout << "Future vec size: " << futures.size() << std::endl;
+            //std::cout << "Future vec size: " << futures.size() << std::endl;
             std::cout << std::flush;
             if (!verbose) {
                 Pbar.update();
