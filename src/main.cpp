@@ -249,7 +249,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         //Not sure if this is good practice but it avoids enqueuing too much stuff
         if(futures.size()>batch_size){
             while(futures.size()!=0) {
-                std::this_thread::sleep_for(1s); //wait for five seconds so tasks can finish
+                std::this_thread::sleep_for(std::chrono::seconds(batch_size)); //wait for five seconds so tasks can finish
                 futures.erase(std::remove_if(futures.begin(), futures.end(), [](const std::future<void> &f) {
                     return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
                 }), futures.end()); // delete finished tasks
