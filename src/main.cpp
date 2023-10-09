@@ -133,7 +133,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
     if (verbose){
         std::cout << "Opening " << input_filename << " for perturbation." << std::endl;
     }
-    std::unique_ptr<PDBStructure> structure = std::make_unique<PDBStructure>(PDBStructure(input_filename));
+    std::unique_ptr<PDBStructure> structure = std::make_unique<PDBStructure>(PDBStructure(input_filename, verbose));
     // create onehot atom features, coords
 
     auto path = out/"extracted";
@@ -221,6 +221,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
+
     Pbar.print("0/0");
     for (unsigned int batch_start{0}; batch_start < files.size();batch_start+=batch_size) {
         int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));
@@ -271,7 +272,6 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         } //wait for some threads to finish, so we dont overload
     }
 }
-
 
 std::size_t number_of_files_in_directory(fs::path path)
 {

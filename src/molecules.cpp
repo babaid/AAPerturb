@@ -29,7 +29,7 @@ double calculateDistance(const Atom& atom1, const Atom& atom2) {
 }
 
 
-PDBStructure::PDBStructure(const fs::path filename){
+PDBStructure::PDBStructure(const fs::path filename, bool verbose): verbose(verbose) {
     //work in progress
     std::ifstream pdbFile(filename);
 

@@ -49,7 +49,7 @@ class PDBStructure{
         std::vector<std::vector<double>> dist_mat;//(numAtoms, std::vector<double>(numAtoms, 0.0));
         std::vector<std::vector<double>> atomic_feat_mat; //Only has to be calculated once.
     public:
-        PDBStructure(const fs::path);
+        PDBStructure(const fs::path, bool);
 
         void calculateDistanceMatrix(); //Calculates distance matrix of one protein
         void findInterfaceResidues(double);
@@ -58,7 +58,7 @@ class PDBStructure{
         std::vector<std::vector<double>> calculateLocalDistanceMatrix(Residue& refres); //you can use any reference residue. This is extremely useful
         void updateDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum); //subsitutes part of the distance matrix. Returns a new one. We dont want to change the original one.
 
-        std::pair<char , std::size_t> chooseRandomResidue() const;
+        [[nodiscard]] std::pair<char , std::size_t> chooseRandomResidue() const;
         double rotateResidueSidechainRandomly(char, std::size_t);
 
 

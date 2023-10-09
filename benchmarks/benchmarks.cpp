@@ -3,10 +3,8 @@
 //
 
 #include<argparse/argparse.hpp>
-#include "pdbparser.h"
 #include "io.h"
 #include "geometry.h"
-#include "montecarlo.h"
 #include<filesystem>
 #include<chrono>
 #include<string>
@@ -31,23 +29,23 @@ void benchmark_pdbparser(fs::path& input_path,fs::path& output_path, unsigned cn
     for (unsigned i{0}; i<cnt; i++){
         for (auto& file:files) {
             start = std::chrono::high_resolution_clock::now();
-            auto structure = parsePDB(file);
+            std::unique_ptr<PDBStructure> structure = std::make_unique<PDBStructure>(PDBStructure(file, false));
             end = std::chrono::high_resolution_clock::now();
             read_duration+=std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
 
             start = std::chrono::high_resolution_clock::now();
-            auto interfaces = findInterfaceResidues(structure, 9.0);
+            structure->findInterfaceResidues(9.0);
             end = std::chrono::high_resolution_clock::now();
             iffind_duration+=std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
 
             start = std::chrono::high_resolution_clock::now();
-            auto ifres = chooseRandomResidue(interfaces);
+            auto ifres = structure->chooseRandomResidue();
             end = std::chrono::high_resolution_clock::now();
             reschoose_duration+=std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
 
             start = std::chrono::high_resolution_clock::now();
 
-            double rmsd = rotateResidueSidechainRandomly(structure, ifres.first, ifres.second, false);
+            double rmsd =structure->rotateResidueSidechainRandomly(ifres.first, ifres.second);
 
             end = std::chrono::high_resolution_clock::now();
             resrot_duration+=std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
@@ -59,7 +57,10 @@ void benchmark_pdbparser(fs::path& input_path,fs::path& output_path, unsigned cn
             std::vector<std::string> comments{c1, c2};
 
             start = std::chrono::high_resolution_clock::now();
-            saveToPDBWithComments(output_path/filename, structure, comments);
+            structure->saveCoords(output_path/filename);
+            auto p  = output_path/(filename+"_dm.tsv");
+            structure->saveLocalDistMat(p, ifres.first, ifres.second);
+            structure->savePDBStructure(output_path/filename, comments);
             end = std::chrono::high_resolution_clock::now();
             write_duration+=std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
         }
