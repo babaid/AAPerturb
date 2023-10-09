@@ -68,4 +68,13 @@ namespace amino_acids{
 
 };
 
+namespace atoms{
+
+    const std::map<std::string, double> ELEMENTS = {{"N", 0}, {"C", 1}, {"O", 2}, {"F", 3}, {"P", 4}, {"S", 5}, {"B", 6}, {"Cl", 7}};
+    const std::map<std::string, double> ELECTRONEGATIVITIES = {{"N", 3.04}, {"C", 2.55}, {"O", 3.5}, {"F", 3.98}, {"P", 2.19}, {"S", 2.58}, {"B", 2.04}, {"Cl", 3.16}};
+    const std::map<std::string, double> N_VALENCE_ELECTRONS= {{"N", 5}, {"C", 4}, {"O", 6}, {"F", 7}, {"P", 5}, {"S", 3}, {"B", 3}, {"Cl", 7}};
+    const std::map<std::string, double> FIRST_IONIZATION_ENERGIES= {{"N", 1402.3}, {"C", 1086.5}, {"O", 1313.9}, {"F", 1681.}, {"P", 1011.8}, {"S", 999.6}, {"B", 800.6}, {"Cl", 1251.2}};
+    const std::map<std::string, double> POLARIZABILITIES = {{"N", 7.4}, {"C", 11.3}, {"O", 5.3}, {"F", 3.74}, {"P", 25}, {"S", 19.4}, {"B", 20.5}, {"Cl", 14.6}};
+};
+
 #endif

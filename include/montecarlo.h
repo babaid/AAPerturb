@@ -10,7 +10,10 @@
 #include<utility>
 #include "molecules.h"
 
-std::pair<char , std::size_t> chooseRandomResidue(const std::map<char, std::vector<int>>& interface_residue_indices);
+class PDBStructure;
+struct Residue;
+
+std::pair<char , std::size_t> chooseRandomResidue(const std::unique_ptr<PDBStructure>& structure);
 double rotateResidueSidechainRandomly(std::unique_ptr<std::map<char, std::vector<Residue>>> & , char& , std::size_t, bool);
 
 #endif

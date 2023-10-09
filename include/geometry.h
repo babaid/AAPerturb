@@ -4,7 +4,6 @@
 #include<string>
 #include<array>
 #include<cmath>
-#include "pdbparser.h"
 #include "molecules.h"
 
 
@@ -19,9 +18,7 @@ std::valarray<double> findRotationAxis(const Residue&, const std::string&);
 unsigned int detect_clashes(const std::vector<std::vector<double>>& matrix, double ythreshold);
 std::valarray<double> calculateCentroid(const Residue& res);
 
-std::vector<std::vector<double>> calculateDistanceMatrix(const std::unique_ptr<std::map<char, std::vector<Residue>>> & chainMap);
-std::vector<std::vector<double>> calculateLocalDistanceMatrix(const std::unique_ptr<std::map<char, std::vector<Residue>>> & chainMap, const Residue& refres);
-double calculateDistance(const Atom& atom1, const Atom& atom2);
+//double calculateDistance(const Atom& atom1, const Atom& atom2);
 double calculateRMSD(const std::vector<Atom>& atoms1, const std::vector<Atom>& atoms2);
 double norm(const std::valarray<double>&);
 bool areResiduesNeighbors(const Residue& residue1, const Residue& residue2, double threshold);

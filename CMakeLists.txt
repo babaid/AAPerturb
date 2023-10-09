@@ -26,15 +26,11 @@ FetchContent_MakeAvailable(argparse)
 
 add_executable(aaperturb
         include/geometry.h
-        include/pdbparser.h
         include/constants.h
         src/geometry.cpp
-        src/pdbparser.cpp
         src/main.cpp
         include/io.h
         src/io.cpp
-        include/montecarlo.h
-        src/montecarlo.cpp
         include/molecules.h
         src/molecules.cpp
         include/fancy.h
@@ -42,35 +38,8 @@ add_executable(aaperturb
         include/threadpool.h
 )
 
-add_executable(iffind
-        include/geometry.h
-        include/pdbparser.h
-        include/constants.h
-        src/geometry.cpp
-        src/pdbparser.cpp
-        include/io.h
-        src/io.cpp
-        include/molecules.h
-        src/molecules.cpp
-        src/iffind.cpp
-)
-add_executable(run-benchmarks
-        include/geometry.h
-        include/pdbparser.h
-        include/constants.h
-        src/geometry.cpp
-        src/pdbparser.cpp
-        src/montecarlo.cpp
-        include/montecarlo.h
-        include/io.h
-        src/io.cpp
-        include/molecules.h
-        src/molecules.cpp
-        benchmarks/benchmarks.cpp
-        benchmarks/main.cpp
-        benchmarks/benchmarks.h
-)
 
-target_link_libraries(iffind argparse)
+
+
 target_link_libraries(aaperturb argparse)
-target_link_libraries(run-benchmarks argparse)
+

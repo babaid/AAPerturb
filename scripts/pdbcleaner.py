@@ -48,6 +48,7 @@ def clean_pdb(file:str, output_file:str):
         pdb.drop(columns=["nresidue_number"], inplace=True)
         pdb.reset_index(inplace=True, drop=True)
         pdb["atom_number"] = pdb.index+1
+        pdb["b_factor"] =  0.0
         save_to_pdb(pdb, os.path.join(output_file, file))
 
 
@@ -81,6 +82,7 @@ def clean_pdbs(input_dir:str, output_dir:str):
                 pdb.drop(columns=["nresidue_number"], inplace=True)
                 pdb.reset_index(inplace=True, drop=True)
                 pdb["atom_number"] = pdb.index+1
+                pdb["b_factor"] = 0.0
                 save_to_pdb(pdb, os.path.join(output_dir, file))
             bar()
 
