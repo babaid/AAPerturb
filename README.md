@@ -45,12 +45,6 @@ An example of such a random perturbation can be seen in the next picture.
 
 ![image](image/image2.png)
 
-
-## PP Interfaces
-
-One more thing that I havent found yet, is a program that finds the interfaces between PP complexes, so I provide it right away.
-
-
 ## Requirements
 
 The library was built using C++23, with g++ and gcc version 13.
