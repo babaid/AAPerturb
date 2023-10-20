@@ -39,6 +39,9 @@ Finally, to be specific about what I would like to implement in the near future,
 Just like in these geometrical transformations are perturbations, we can look at mutations in the same way. While the concept proposed in the first mentioned paper is to recreate atomic coordinates after a perturbation, a similar operation could be used in an alchemical way, recreating both coordinates, and adding atoms/graph nodes to a molecular graph, with the goal to reduce its strain/energy or recreate the original structure.
 In principle this could be used to predict the probability of certain mutations, which is obviously something cool and useful.
 
+An example of such a random perturbation can be seen in the next picture.
+
+![image](https://github.com/babaid/AAPerturb/tree/graphs_included/images/image1.png)
 
 ## PP Interfaces
 
