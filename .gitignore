@@ -17,7 +17,7 @@ _**/
 # Precompiled Headers
 *.gch
 *.pch
-
+*.tsv
 # Compiled Dynamic libraries
 *.so
 *.dylib
