@@ -43,7 +43,7 @@ In principle this could be used to predict the probability of certain mutations,
 
 An example of such a random perturbation can be seen in the next picture.
 
-![image](images/image2.png)
+![image](image/image2.png)
 
 
 ## PP Interfaces
