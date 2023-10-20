@@ -41,7 +41,8 @@ In principle this could be used to predict the probability of certain mutations,
 
 An example of such a random perturbation can be seen in the next picture.
 
-![image](https://github.com/babaid/AAPerturb/tree/graphs_included/images/image1.png)
+![image](images/image1.png)
+
 
 ## PP Interfaces
 
