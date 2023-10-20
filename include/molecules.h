@@ -61,6 +61,7 @@ class PDBStructure{
         [[nodiscard]] std::pair<char , std::size_t> chooseRandomResidue() const;
         double rotateResidueSidechainRandomly(char, std::size_t);
 
+        double rotateResidueSideChain(char, std::size_t );
 
 
         void calculateAtomicFeatureMatrix();
@@ -77,6 +78,10 @@ class PDBStructure{
 
     };
 
+class Protein: public PDBStructure
+{
+
+};
 //std::vector<std::vector<double>> updateDistanceMatrixLocally(const PDBStructure& ,std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum);
 std::vector<double> one_hot(unsigned index, unsigned num_classes);
 

@@ -11,7 +11,7 @@
 
 
 
-void rotateCoordinatesAroundAxis(std::valarray<double>&,  const std::valarray<double>& axis, const double angleInDegrees);
+void rotateCoordinatesAroundAxis(std::valarray<double>&, const std::valarray<double>& p, const std::valarray<double>& axis, const double angleInDegrees);
 std::valarray<double> findRotationAxis(const Residue&, const std::string&);
 
 

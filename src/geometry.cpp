@@ -8,39 +8,44 @@
 #include "molecules.h"
 
 
-void rotateCoordinatesAroundAxis(std::valarray<double>& vector, const std::valarray<double>& axis, const double angleInDegrees)
-{
-    //std::valarray<double> axis = axis / std::sqrt(std::pow(axis[0], 2) + std::pow(axis[1], 2) + std::pow(axis[2], 2));
-    if(vector.size() != 3 && axis.size() != 3 ) throw std::out_of_range("Coordinates should be 3D.");
-    
-    double angle = angleInDegrees * M_PI / 180.0;
-    double cosAngle = std::cos(angle);
-    double sinAngle = std::sin(angle);
+using Vector3 = std::valarray<double>;
 
-    // Calculate the rotation matrix
-    
+// Function to rotate a vector around an arbitrary axis
+void rotateCoordinatesAroundAxis(Vector3& vector, const Vector3& p, const Vector3& axis, double angle) {
+    double cs = std::cos(angle);
+    double si = std::sin(angle);
+    double t = 1 - cs;
 
-    std::array<std::array<double, 3>, 3> rotationMatrix{{   {cosAngle + (1 - cosAngle) * std::pow(axis[0], 2), (1 - cosAngle) * axis[0] * axis[1] - sinAngle * axis[2],(1 - cosAngle) * axis[0] * axis[2] + sinAngle * axis[1]},
-                                                            {(1 - cosAngle) * axis[1] * axis[0] + sinAngle * axis[2], cosAngle + (1 - cosAngle) * std::pow(axis[1], 2), (1 - cosAngle) * axis[1] * axis[2] - sinAngle * axis[0]},
-                                                            {(1 - cosAngle) * axis[2] * axis[0] - sinAngle * axis[1],(1 - cosAngle) * axis[2] * axis[1] + sinAngle * axis[0], cosAngle + (1 - cosAngle) * std::pow(axis[2], 2)} }};
+    double x = vector[0];
+    double y = vector[1];
+    double z = vector[2];
 
+    double a = p[0];
+    double b = p[1];
+    double c = p[2];
 
-    // Apply the rotation matrix to the input vector
-    double oldX = vector[0];
-    double oldY = vector[1];
-    double oldZ = vector[2];
+    double u = axis[0];
+    double v = axis[1];
+    double w = axis[2];
 
-    vector[0] = rotationMatrix[0][0] * oldX + rotationMatrix[0][1] * oldY + rotationMatrix[0][2] * oldZ;
-    vector[1] = rotationMatrix[1][0] * oldX + rotationMatrix[1][1] * oldY + rotationMatrix[1][2] * oldZ;
-    vector[2] = rotationMatrix[2][0] * oldX + rotationMatrix[2][1] * oldY + rotationMatrix[2][2] * oldZ;
+    double x_new = (a*(v*v + w*w) - u*(b*v + c*w - u*x - v*y - w*z ))*t + x*cs + (- c*v + b*w - w*y + v*z)*si;
+    double y_new = (b*(u*u + w*w) - v*(a*u + c*w - u*x - v*y - w*z ))*t + y*cs + (c*u - a*w + w*x - u*z)*si;
+    double z_new = (c*(u*u + v*v) - w*(a*u + b*v - u*x - v*y - w*z ))*t + z*cs + (- b*u + a*v - v*x + u*y)*si;
+
+    vector[0] = x_new;
+    vector[1] = y_new;
+    vector[2] = z_new;
 }
+
 
 std::valarray<double> findRotationAxis(const Residue& residue, const std::string& axis)
 {
+    unsigned cntr{0};
     for (const Atom& atom : residue.atoms) {
         if (atom.name == axis) {
-            return atom.coords;
+            return residue.atoms.at(cntr).coords;
         }
+        cntr++;
     }
     return  {};
 }

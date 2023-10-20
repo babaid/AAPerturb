@@ -19,6 +19,8 @@ I would say my code is anything else than highly optimized. There are different 
 Although it would have been more efficient to work with matrices of atomic coordinates, this would mean to keep track of exactly how those matrices are ordered in terms of atoms and residues.
 So to keep it simple, and bookkeeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains. If someone has a more efficient idea please contact me.
 
+Rotating around bonds is a well described [problem](https://sites.google.com/site/glennmurray/glenn-murray-ph-d/rotation-matrices-and-formulas/rotation-about-an-arbitrary-axis-in-3-dimensions), for which you have to implement this confusing rotation matrix, otherwise it won't work.
+
 ## Random Perturbations
 
 The main goal of the package is to perform random perturbations the sidechain of a random amino acid, this amino acid should reside

@@ -329,7 +329,10 @@ void PDBStructure::getInterfaceResidues() {
 }
 
 Residue PDBStructure::getResidue(char chain, unsigned int resSeq) {
-    return chains.at(chain).at(resSeq);
+    if(chains.find(chain) != chains.end())
+        if(resSeq<chains.at(chain).size())
+            return chains.at(chain).at(resSeq);
+    else return Residue();
 }
 
 void PDBStructure::setResidue(const Residue & res) {
@@ -404,18 +407,32 @@ double PDBStructure::rotateResidueSidechainRandomly(char chain, std::size_t resN
             auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                              amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
             std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
-            auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index;
+            auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index+1;
 
             std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                     resName).end());
-            std::valarray<double> rot_coords = findRotationAxis(chains.at(chain).at(resNum), axis);
+
+            std::string secondary_pivot;
+
+            if(axis == "CB") secondary_pivot = "CA";
+            else
+            {
+                auto it_substructure_lp = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
+                                                 amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
+                --it_substructure_lp;
+                secondary_pivot = *it_substructure_lp;
+            }
+
+            auto point = findRotationAxis(chains.at(chain).at(resNum), axis);
+            std::valarray<double> rot_coords = point - findRotationAxis(chains.at(chain).at(resNum), secondary_pivot);
+
             double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
             double angle = dist(thread_rng);
 
             for (Atom& atom: chains.at(chain).at(resNum).atoms)
                 if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
                     //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
-                    rotateCoordinatesAroundAxis(atom.coords, rot_coords / vec_norm, angle);
+                    rotateCoordinatesAroundAxis(atom.coords, point, rot_coords / vec_norm, angle);
 
                 }
         }
@@ -435,6 +452,76 @@ double PDBStructure::rotateResidueSidechainRandomly(char chain, std::size_t resN
     return rmsd;
 }
 
+double PDBStructure::rotateResidueSideChain(char chain, std::size_t resNum) {
+
+
+    bool rotationSuccess = false;
+    Residue ref_res(chains.at(chain).at(resNum));
+    std::string resName = chains.at(chain).at(resNum).resName;
+
+
+    //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
+    double rmsd{0};
+    //we do not prefer GLY PRO and ALA. Maybe only for displacement
+    if (resName != "GLY" && resName != "PRO" && resName != "ALA" &&
+        amino_acids::axes::AMINO_MAP.find(resName) != amino_acids::axes::AMINO_MAP.end()) {
+        for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
+            rotationSuccess = false;
+            while (!rotationSuccess) {
+                auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
+                                                 amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
+                std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
+                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index +1;
+
+                std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
+                        resName).end());
+                std::string secondary_pivot;
+
+                if(axis == "CB") secondary_pivot = "CA";
+                else
+                {
+                    auto it_substructure = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
+                                                     amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
+                    --it_substructure;
+                    secondary_pivot = *it_substructure;
+                }
+                std::cout << "Primary pivot: "<< axis << " secondary pivot: " << secondary_pivot << std::endl;
+                auto point = findRotationAxis(chains.at(chain).at(resNum), axis);
+                std::valarray<double> rot_coords =  point - findRotationAxis(chains.at(chain).at(resNum), secondary_pivot);
+
+                double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
+                double angle;
+                std::cout << "Specify an angle you want to use for the current axis: " << std::endl;
+                std::cin >> angle;
+
+                for (Atom &atom: chains.at(chain).at(resNum).atoms)
+                    if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
+                        //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
+                        rotateCoordinatesAroundAxis(atom.coords, point, rot_coords / vec_norm, angle);
+
+                    }
+
+
+                auto local_distance_matrix = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
+
+                if (detect_clashes(local_distance_matrix, 0.21)) {
+                    if (verbose)
+                        std::cout << "Atoms clashed, try maybe a smaller, or another angle in the next iteration."
+                                  << std::endl;
+                    chains.at(chain).at(resNum) = ref_res;
+                    rotationSuccess = false;
+                } else {
+                    this->updateDistanceMatrixLocally(local_distance_matrix, chain, resNum); // update distance matrix
+                    rotationSuccess = true;
+                }
+                rmsd = calculateRMSD(ref_res.atoms, chains.at(chain).at(resNum).atoms);
+
+            }
+        }
+        return rmsd;
+
+    }
+}
 void PDBStructure::saveLocalDistMat(fs::path outputFile, char chain, int resNum) {
     auto local_dist_mat = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
     saveMatrixAsTSV(local_dist_mat, outputFile);

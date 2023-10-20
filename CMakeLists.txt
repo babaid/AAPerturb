@@ -38,8 +38,23 @@ add_executable(aaperturb
         include/threadpool.h
 )
 
+add_executable(aaperturb-single-rot
+        test/test.cpp
+        include/geometry.h
+        include/constants.h
+        src/geometry.cpp
+        include/io.h
+        src/io.cpp
+        include/molecules.h
+        src/molecules.cpp
+        include/fancy.h
+        src/fancy.cpp
+        include/threadpool.h
+)
+
 
 
 
 target_link_libraries(aaperturb argparse)
+target_link_libraries(aaperturb-single-rot argparse)
 
