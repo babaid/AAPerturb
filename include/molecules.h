@@ -37,7 +37,7 @@ struct Residue {
     std::vector<std::vector<double>> atom_coords;
 };
 
-//A class for later, not used RN but certainly cool
+
 class PDBStructure{
     private:
         bool verbose{true};
