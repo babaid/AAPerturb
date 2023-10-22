@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
     }
 
     auto rmsd = structure.rotateResidueSideChain(chain, resid);
+    rmsd = structure.rotateResidueAroundBackbone(chain, resid);
     std::vector<std::string> comments;
     std::string comment1 = std::format("PERTURBATION: /{}:{}", chain, std::to_string(resid));
     std::string comment2 = std::format("RMSD: {}", rmsd);

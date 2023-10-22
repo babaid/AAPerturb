@@ -444,7 +444,7 @@ double PDBStructure::rotateResidueSidechainRandomly(char chain, std::size_t resN
             chains.at(chain).at(resNum) = ref_res;
             angles = angles / 10;
             std::uniform_real_distribution<double> dist(-angles, angles);
-        } else this->updateDistanceMatrixLocally(local_distance_matrix, chain, resNum); // update distance matrix
+        } else  // update distance matrix
 
         rmsd = calculateRMSD(ref_res.atoms, chains.at(chain).at(resNum).atoms);
 
@@ -520,7 +520,41 @@ double PDBStructure::rotateResidueSideChain(char chain, std::size_t resNum) {
         }
         return rmsd;
 
+
     }
+}
+
+double  PDBStructure::rotateResidueAroundBackbone(char chain, std::size_t resNum){
+    bool rotationSuccess = false;
+    Residue ref_res(chains.at(chain).at(resNum));
+    std::string resName = chains.at(chain).at(resNum).resName;
+    auto a = findRotationAxis(chains.at(chain).at(resNum), "N");
+    auto b = findRotationAxis(chains.at(chain).at(resNum), "C");
+    auto axis = b-a;
+    double angle;
+    std::cout << "Angle: ";
+    std::cin >> angle;
+    double rmsd{0};
+    while (!rotationSuccess) {
+        for (Atom &atom: chains.at(chain).at(resNum).atoms) {
+            rotateCoordinatesAroundAxis(atom.coords, a, axis / std::sqrt(std::pow(axis, 2).sum()), angle);
+        }
+        auto local_distance_matrix = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
+
+        if (detect_clashes(local_distance_matrix, 0.21)) {
+            if (verbose)
+                std::cout << "Atoms clashed, try maybe a smaller, or another angle in the next iteration."
+                          << std::endl;
+            chains.at(chain).at(resNum) = ref_res;
+            rotationSuccess = false;
+        } else {
+            rotationSuccess = true;
+        }
+
+    }
+    rmsd = calculateRMSD(ref_res.atoms, chains.at(chain).at(resNum).atoms);
+    return rmsd;
+
 }
 void PDBStructure::saveLocalDistMat(fs::path outputFile, char chain, int resNum) {
     auto local_dist_mat = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));

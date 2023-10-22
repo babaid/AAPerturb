@@ -63,6 +63,7 @@ class PDBStructure{
 
         double rotateResidueSideChain(char, std::size_t );
 
+        double rotateResidueAroundBackbone(char, std::size_t);
 
         void calculateAtomicFeatureMatrix();
         void savePDBStructure(fs::path, const std::vector<std::string>&);
