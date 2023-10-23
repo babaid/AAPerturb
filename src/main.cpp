@@ -133,30 +133,30 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
     if (verbose){
         std::cout << "Opening " << input_filename << " for perturbation." << std::endl;
     }
-    std::unique_ptr<PDBStructure> structure = std::make_unique<PDBStructure>(PDBStructure(input_filename, verbose));
+    std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(RandomPerturbator(input_filename, verbose));
     // create onehot atom features, coords
 
     auto path = out/"extracted";
 
     if(!fs::is_directory(path)) fs::create_directory(path);
     //if (!fs::exists(path/"at_feat.tsv")){structure->calculateAtomicFeatureMatrix(); structure->saveFeatureMat(path, true);} // after we saved it lets delete it immediately.
-    if (!fs::exists(path/"coords.tsv")) structure->saveCoords(path);
+    if (!fs::exists(path/"coords.tsv")) pert->saveCoords(path);
 
-    structure->calculateDistanceMatrix();
-    auto original_dist_mat = structure->getDistMat();
+    pert->calculateDistanceMatrix();
+    auto original_dist_mat = pert->getDistMat();
 
 
     if (!fs::exists(path/"original_dist_mat.tsv")) saveMatrixAsTSV(original_dist_mat, path/"original_dist_mat.tsv"); //save original distmat.
     if (verbose)
     {
-        structure->getNumberOfResidues(); //outputs how many residues there are in each chain.
+        pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
     }
     if (verbose) std::cout << "Looking for interface residues." << std::endl;
 
-    structure->findInterfaceResidues(12.0);
+    pert->findInterfaceResidues(12.0);
 
     if (verbose){
-        structure->getInterfaceResidues();
+        pert->getInterfaceResidues();
     }
 
     std::size_t perturbcntr{number_of_files_in_directory(out)};
@@ -168,19 +168,20 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
         if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
 
-        std::pair<char , std::size_t>  res = structure->chooseRandomResidue();
+        std::pair<char , std::size_t>  res = pert->chooseRandomResidue();
 
         if(verbose) std::cout << res.first << " : " << res.second << std::endl;
-        Residue ref_residue = structure->getResidue(res.first, res.second);
+        Residue ref_residue = pert->getResidue(res.first, res.second);
 
         std::vector<std::string> comments;
-
         if(verbose) std::cout << "Perturbing the chosen residue";
 
         //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
         double rmsd = std::numeric_limits<double>::infinity();
         try {
-            rmsd = structure->rotateResidueSidechainRandomly(res.first, res.second);
+            pert->rotateResidueSidechainRandomly(res.first, res.second);
+            pert->rotateResidueAroundBackboneRandomly(res.first, res.second);
+            rmsd = pert->calculateRMSD(ref_residue);
         }
         catch (...)
         {
@@ -204,9 +205,9 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
             auto distmat_fname = std::to_string(perturbcntr)+".tsv";
             // save update stuff.
-            structure->saveLocalDistMat(out/distmat_fname, res.first, res.second); //This either will make things fast or slow
-            structure->savePDBStructure(out_path, comments); //usual
-            structure->setResidue(ref_residue); //hm.
+            pert->saveLocalDistMat(out/distmat_fname, res.first, res.second); //This either will make things fast or slow
+            pert->saveToPDB(out_path, comments); //usual
+            pert->setResidue(ref_residue); //hm.
 
 
     }
