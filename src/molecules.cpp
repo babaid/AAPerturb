@@ -370,7 +370,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
     thread_local std::mt19937 thread_rng(thread_dev());
 
     //this is where you could use your own distribution of angles
-    double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
+    double angles = 0.5; // keep it small or change the clash cutoff, if not changed there could still be clashes...
     // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
     // the greater the angle range gets, the greater should be the clash cutoff
     // optionally we could differentiate between types of atoms at clashes, but is it worth it?

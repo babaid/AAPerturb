@@ -196,7 +196,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             perturbcntr++;
         }
 
-            std::string comment1 = std::format("PERTURBATION: /{}:{}", res.first, std::to_string(res.second));
+            std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first, std::to_string(res.second+1));
             std::string comment2 = std::format("RMSD: {}", rmsd);
 
             comments.push_back(comment1);
