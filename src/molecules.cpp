@@ -156,7 +156,7 @@ void Protein::saveToPDB(fs::path& outputFilename, const std::vector<std::string>
             }
         }
     }
-    //pdbFile << "ENDMDL"<< std::endl;
+    pdbFile << "ENDMDL"<< std::endl;
     pdbFile.close();
 }
 
