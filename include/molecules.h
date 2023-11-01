@@ -90,6 +90,7 @@ public:
     std::vector<std::vector<double>> getDistMat();
     Residue getResidue(char, unsigned);
 
+
     //setters
     void setResidue(const Residue&);
     void setDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum); //subsitutes part of the distance matrix. Returns a new one. We dont want to change the original one.

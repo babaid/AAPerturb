@@ -143,10 +143,10 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
     if (!fs::exists(path/"coords.tsv")) pert->saveCoords(path);
 
     pert->calculateDistanceMatrix();
-    auto original_dist_mat = pert->getDistMat();
+    //auto original_dist_mat = pert->getDistMat();
 
 
-    if (!fs::exists(path/"original_dist_mat.tsv")) saveMatrixAsTSV(original_dist_mat, path/"original_dist_mat.tsv"); //save original distmat.
+    //if (!fs::exists(path/"original_dist_mat.tsv")) saveMatrixAsTSV(original_dist_mat, path/"original_dist_mat.tsv"); //save original distmat.
     if (verbose)
     {
         pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
@@ -196,11 +196,14 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             perturbcntr++;
         }
 
+
             std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first, std::to_string(res.second+1));
-            std::string comment2 = std::format("RMSD: {}", rmsd);
+            std::string comment2 = std::format("DISTMAT CHANGE INDEX: {} ", std::to_string(ref_residue.atoms.at(0).serial));
+            std::string comment3 = std::format("RMSD: {}", rmsd);
 
             comments.push_back(comment1);
             comments.push_back(comment2);
+            comments.push_back(comment3);
 
             if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
             auto distmat_fname = std::to_string(perturbcntr)+".tsv";
