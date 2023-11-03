@@ -134,7 +134,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
         std::cout << "Opening " << input_filename << " for perturbation." << std::endl;
     }
     std::size_t perturbcntr{number_of_files_in_directory(out)};
-    if (perturbcntr<num_perturbations){
+    if (perturbcntr<num_perturbations) {
 
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
                 RandomPerturbator(input_filename, verbose));
@@ -162,46 +162,47 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             pert->getInterfaceResidues();
         }
 
-    }
 
-    while(perturbcntr<num_perturbations) {
+        while (perturbcntr < num_perturbations) {
 
-        std::string fname = std::to_string(perturbcntr) + ".pdb";
-        fs::path out_path = out / fname;
+            std::string fname = std::to_string(perturbcntr) + ".pdb";
+            fs::path out_path = out / fname;
 
-        if(verbose) std::cout <<  "Choosing a random residue to perturb: ";
+            if (verbose) std::cout << "Choosing a random residue to perturb: ";
 
-        std::pair<char , std::size_t>  res = pert->chooseRandomResidue();
+            std::pair<char, std::size_t> res = pert->chooseRandomResidue();
 
-        if(verbose) std::cout << res.first << " : " << res.second << std::endl;
-        Residue ref_residue = pert->getResidue(res.first, res.second);
+            if (verbose) std::cout << res.first << " : " << res.second << std::endl;
+            Residue ref_residue = pert->getResidue(res.first, res.second);
 
-        std::vector<std::string> comments;
-        if(verbose) std::cout << "Perturbing the chosen residue";
+            std::vector<std::string> comments;
+            if (verbose) std::cout << "Perturbing the chosen residue";
 
-        //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
-        double rmsd = std::numeric_limits<double>::infinity();
-        try {
-            pert->rotateResidueSidechainRandomly(res.first, res.second);
-            pert->rotateResidueAroundBackboneRandomly(res.first, res.second);
-            rmsd = pert->calculateRMSD(ref_residue);
-        }
-        catch (...)
-        {
-            if(verbose) std::cout << "Something was not right at "  << input_filename <<std::endl;
-            continue;
-        }
+            //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
+            double rmsd = std::numeric_limits<double>::infinity();
+            try {
+                pert->rotateResidueSidechainRandomly(res.first, res.second);
+                pert->rotateResidueAroundBackboneRandomly(res.first, res.second);
+                rmsd = pert->calculateRMSD(ref_residue);
+            }
+            catch (...) {
+                if (verbose) std::cout << "Something was not right at " << input_filename << std::endl;
+                continue;
+            }
 
-        if(verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
-        if (rmsd == 0.0){
-            perturbcntr--; continue;
-        } else {
-            perturbcntr++;
-        }
+            if (verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
+            if (rmsd == 0.0) {
+                perturbcntr--;
+                continue;
+            } else {
+                perturbcntr++;
+            }
 
 
-            std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first, std::to_string(res.second+1));
-            std::string comment2 = std::format("DISTMAT CHANGE INDEX: {} ", std::to_string(ref_residue.atoms.at(0).serial));
+            std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first,
+                                               std::to_string(res.second + 1));
+            std::string comment2 = std::format("DISTMAT CHANGE INDEX: {} ",
+                                               std::to_string(ref_residue.atoms.at(0).serial));
             std::string comment3 = std::format("RMSD: {}", rmsd);
 
             comments.push_back(comment1);
@@ -209,13 +210,15 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             comments.push_back(comment3);
 
             if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
-            auto distmat_fname = std::to_string(perturbcntr)+".tsv";
+            auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
             // save update stuff.
-            pert->saveLocalDistMat(out/distmat_fname, res.first, res.second); //This either will make things fast or slow
+            pert->saveLocalDistMat(out / distmat_fname, res.first,
+                                   res.second); //This either will make things fast or slow
             pert->saveToPDB(out_path, comments); //usual
             pert->setResidue(ref_residue); //hm.
 
 
+        }
     }
 }
 
