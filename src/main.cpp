@@ -135,6 +135,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
     }
     std::size_t perturbcntr{number_of_files_in_directory(out)};
     if (perturbcntr<num_perturbations){
+
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
                 RandomPerturbator(input_filename, verbose));
         // create onehot atom features, coords
