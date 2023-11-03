@@ -133,33 +133,35 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
     if (verbose){
         std::cout << "Opening " << input_filename << " for perturbation." << std::endl;
     }
-    std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(RandomPerturbator(input_filename, verbose));
-    // create onehot atom features, coords
-
-    auto path = out/"extracted";
-
-    if(!fs::is_directory(path)) fs::create_directory(path);
-    //if (!fs::exists(path/"at_feat.tsv")){structure->calculateAtomicFeatureMatrix(); structure->saveFeatureMat(path, true);} // after we saved it lets delete it immediately.
-    if (!fs::exists(path/"coords.tsv")) pert->saveCoords(path);
-
-    pert->calculateDistanceMatrix();
-    //auto original_dist_mat = pert->getDistMat();
-
-
-    //if (!fs::exists(path/"original_dist_mat.tsv")) saveMatrixAsTSV(original_dist_mat, path/"original_dist_mat.tsv"); //save original distmat.
-    if (verbose)
-    {
-        pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
-    }
-    if (verbose) std::cout << "Looking for interface residues." << std::endl;
-
-    pert->findInterfaceResidues(12.0);
-
-    if (verbose){
-        pert->getInterfaceResidues();
-    }
-
     std::size_t perturbcntr{number_of_files_in_directory(out)};
+    if (perturbcntr<num_perturbations){
+        std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
+                RandomPerturbator(input_filename, verbose));
+        // create onehot atom features, coords
+
+        auto path = out / "extracted";
+
+        if (!fs::is_directory(path)) fs::create_directory(path);
+        //if (!fs::exists(path/"at_feat.tsv")){structure->calculateAtomicFeatureMatrix(); structure->saveFeatureMat(path, true);} // after we saved it lets delete it immediately.
+        if (!fs::exists(path / "coords.tsv")) pert->saveCoords(path);
+
+        pert->calculateDistanceMatrix();
+        //auto original_dist_mat = pert->getDistMat();
+
+
+        //if (!fs::exists(path/"original_dist_mat.tsv")) saveMatrixAsTSV(original_dist_mat, path/"original_dist_mat.tsv"); //save original distmat.
+        if (verbose) {
+            pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
+        }
+        if (verbose) std::cout << "Looking for interface residues." << std::endl;
+
+        pert->findInterfaceResidues(12.0);
+
+        if (verbose) {
+            pert->getInterfaceResidues();
+        }
+
+    }
 
     while(perturbcntr<num_perturbations) {
 
