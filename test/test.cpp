@@ -61,12 +61,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    PDBStructure structure(input_file, verbose);
+    RandomPerturbator structure(input_file, verbose);
 
     structure.calculateDistanceMatrix();
     structure.saveDistMat(output_dir/"distma.tsv");
     std::cout << "You can choose from the following interface resiudes: " << std::endl;
-    structure.getNumberOfResidues();
+
 
     char chain{'0'};
     int resid{-1};
