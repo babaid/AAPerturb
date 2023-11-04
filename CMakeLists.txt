@@ -4,12 +4,10 @@ cmake_minimum_required(VERSION 3.22)
 project(AAPerturb VERSION 1.2.0)
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O3 ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
-set(CMAKE_INSTALL_PREFIX )
 set(CMAKE_CXX_STANDARD_REQUIRED  ON)
 set(CMAKE_CXX_STANDARD 23)
 
 include_directories(include)
-
 include(FetchContent)
 FetchContent_Declare(
         argparse
