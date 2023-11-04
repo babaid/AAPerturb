@@ -146,7 +146,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
         //if (!fs::exists(path/"at_feat.tsv")){structure->calculateAtomicFeatureMatrix(); structure->saveFeatureMat(path, true);} // after we saved it lets delete it immediately.
         if (!fs::exists(path / "coords.tsv")) pert->saveCoords(path);
 
-        pert->calculateDistanceMatrix();
+        //pert->calculateDistanceMatrix();
         //auto original_dist_mat = pert->getDistMat();
 
 
