@@ -54,14 +54,8 @@ To build it clone this project and inside the project directory:
 ```
 mkdir build
 cd build
-cmake ..
-make -jN aaperturb
-```
-
-or if you want to use the interface residue finder executable:
-
-```
-make -jN iffind
+cmake -DCMAKE_INSTALL_PREFIX="PATH TO YOUR PREFERRED INSTALL DIR" ..
+make -jN aaperturb install 
 ```
 
 ### Cleaning of PDB files.
@@ -77,15 +71,6 @@ python pdbcleaner.py -i [INPUT_DIR/FILE] -o [OUTPUT_DIR/FILE]
 ```
 
 It is going to clean all the files and save them. Specifying the input dir to be the same as the output dir is prohibited due to the safety of your dataset.
-
-
-### Benchmarks
-
-By building run-benchmarks, you can measure the execution time for a given test dataset. Obviously the interface finding part
-takes the most time, approximately 1s-2s for a structure. So after each process started for a batch we wait batch_size*1s for processes
-to finish, if there are too many processes we wait additinally some time until there is place in the process pool.
-Once I figure out some performance issues and maybe move graph creation also to my code instead of doing it in python, dataset creation should be a piece of cake in terms of speed.
-
 
 
 
