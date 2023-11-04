@@ -99,8 +99,6 @@ int main(int argc, char *argv[]) {
     structure.savePDBStructure(output_dir/"rotated.pdb", comments);
 
 
-
-
 }
 
 
