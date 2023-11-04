@@ -33,7 +33,7 @@ void perturbRun(fs::path, fs::path, unsigned int, const bool);
 std::size_t number_of_files_in_directory(fs::path path);
 int main(int argc, char *argv[]) {
 
-    argparse::ArgumentParser program("aaperturb");
+    argparse::ArgumentParser program("aaperturb", "1.2.0");
     program.add_argument("-v", "--verbose")
             .help("Enable verbose mode. It is useful if you want to know if something is happening.")
             .default_value(false)

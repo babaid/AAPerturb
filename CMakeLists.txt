@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
-project(AA_Sidechain_Perturbation_CPP)
 
+
+project(AAPerturb VERSION 1.2.0)
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O3 ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
+set(CMAKE_INSTALL_PREFIX )
 set(CMAKE_CXX_STANDARD_REQUIRED  ON)
 set(CMAKE_CXX_STANDARD 23)
 
@@ -38,23 +40,6 @@ add_executable(aaperturb
         include/threadpool.h
 )
 
-add_executable(aaperturb-single-rot
-        test/test.cpp
-        include/geometry.h
-        include/constants.h
-        src/geometry.cpp
-        include/io.h
-        src/io.cpp
-        include/molecules.h
-        src/molecules.cpp
-        include/fancy.h
-        src/fancy.cpp
-        include/threadpool.h
-)
-
-
-
 
 target_link_libraries(aaperturb argparse)
-target_link_libraries(aaperturb-single-rot argparse)
-
+install(TARGETS aaperturb DESTINATION ${CMAKE_INSTALL_PREFIX})
