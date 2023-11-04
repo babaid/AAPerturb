@@ -24,9 +24,9 @@
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;       
 bool verbose=false;
-bool force = false;
+//bool force = false;
 
-void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool, const bool);
+void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool);
 void perturbRun(fs::path, fs::path, unsigned int, const bool);
 
 
@@ -52,10 +52,10 @@ int main(int argc, char *argv[]) {
             .scan<'d', std::size_t>()
             .default_value(std::size_t(1))
             .help("The number of variations of a single protein.");
-    program.add_argument("-f", "--force")
-            .help("Force recreation of already existent files in the output directory. Treat with care.")
-            .default_value(false)
-            .implicit_value(true);
+    //program.add_argument("-f", "--force")
+    //        .help("Force recreation of already existent files in the output directory. Treat with care.")
+    //        .default_value(false)
+    //        .implicit_value(true);
 
     try {
         program.parse_args(argc, argv);
@@ -72,11 +72,11 @@ int main(int argc, char *argv[]) {
         verbose = true;
     }
 
-    if(program["-f"] == true)
-    {
-        if (verbose) std::cout << "You forced me to use force." << std::endl;
-        force=true;
-    }
+    //if(program["-f"] == true)
+    //{
+    //    if (verbose) std::cout << "You forced me to use force." << std::endl;
+    //    force=true;
+    //}
 
     fs::path input_dir, output_dir;
     if (auto ifn = program.present("-i"))
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     }*/
 
     std::cout<< "Starting"<< std::endl;
-    createdataset(input_dir, output_dir, num_variations, batch_size, force, verbose);
+    createdataset(input_dir, output_dir, num_variations, batch_size, verbose);
     //std::unique_ptr<PDBStructure> structure = std::make_unique<PDBStructure>(PDBStructure("../test/cleaned/1avg.pdb"));
     //structure->calculateDistanceMatrix();
     //structure->saveDistMat("../dm.tsv");
@@ -217,7 +217,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 }
 
 
-void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size,  const bool force, const bool verbose) {
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool verbose) {
 
     //Batched threadpool. We wait calmly for each thread to finish, when they finished, we empty the queue of tasks, and start the next iteration.
     // I strictly want to enqueue just as many tasks as the batch size allows, avoiding any type of overflows
