@@ -24,12 +24,8 @@ bool Atom::operator==(const Atom &atom) const {
     return ser && name && rname && el;
 }
 
-double calculateDistance(const Atom& atom1, const Atom& atom2) {
-    return std::sqrt(std::pow(atom2.coords - atom1.coords, 2).sum());
-}
 
-
-PDBStructure::PDBStructure(const fs::path filename, bool verbose): verbose(verbose) {
+Protein::Protein(fs::path& filename){
     //work in progress
     std::ifstream pdbFile(filename);
 
@@ -97,79 +93,8 @@ PDBStructure::PDBStructure(const fs::path filename, bool verbose): verbose(verbo
     pdbFile.close();
 }
 
-void PDBStructure::calculateDistanceMatrix() {
-    dist_mat =  std::vector<std::vector<double>>(numAtoms, std::vector<double>(numAtoms, 0.0));
-    int currentIndex = 0;
-    // Iterate through the chainMap structure
-    for (const auto& chainEntry1 : chains) {
-        for (auto const& residue1 : chainEntry1.second) {
-            for (const Atom& atom1 : residue1.atoms) {
-                int otherIndex = 0;
-                for (const auto& chainEntry2 : chains) {
-                    for (auto const&  residue2 : chainEntry2.second) {
-                        for (const Atom& atom2 : residue2.atoms) {
-                            double distance = calculateDistance(atom1, atom2);
-                            dist_mat[currentIndex][otherIndex] = distance;
-                            if (currentIndex == otherIndex) {
-                                dist_mat.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
-                            }
-                            otherIndex++;
-                        }
-                    }
-                }
-                currentIndex++;
-            }
-        }
-    }
-}
 
-std::vector<std::vector<double>> PDBStructure::calculateLocalDistanceMatrix(Residue &refres) {
-
-    std::vector<std::vector<double>> distanceMatrix =  std::vector<std::vector<double>>(numAtoms, std::vector<double>(refres.atoms.size(), 0.0));
-
-    int currentIndex = 0;
-
-    // Iterate through the chainMap structure
-    for (const auto& chainEntry1 : chains) {
-        for (auto const& residue1: chainEntry1.second) {
-            for (const Atom& atom1: residue1.atoms) {
-                int otherIndex = 0;
-                for (const Atom& atom2: refres.atoms) {
-                    double distance = calculateDistance(atom1, atom2);
-                    distanceMatrix.at(currentIndex).at(otherIndex) = distance;
-                    // Set diagonal elements to max
-                    if (residue1.resSeq == refres.resSeq && atom1 == atom2) {
-                        distanceMatrix.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
-                    }
-                    otherIndex++;
-                }
-                currentIndex++;
-            }
-        }
-    }
-    return distanceMatrix;
-}
-
-
-void PDBStructure::updateDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum){
-    auto atompos = chains.at(chain).at(resNum).atoms.at(0).serial-1;
-    for(std::size_t i{0}; i<numAtoms; i++)
-    {
-        for(int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
-            dist_mat.at(i).at(j) = newPart.at(i).at(j-atompos);
-            dist_mat.at(j).at(i) = newPart.at(i).at(j-atompos); // Symmetry. Maybe not optimal. IDK
-        }
-    }
-}
-
-std::vector<double> one_hot(unsigned int index, unsigned int num_classes) {
-    std::vector<double> vec(num_classes, 0.0);
-    vec.at(index) = 1.0;
-    return vec;
-}
-
-
-void PDBStructure::savePDBStructure(fs::path outputFilename, const std::vector<std::string>& comments) {
+void Protein::saveToPDB(fs::path& outputFilename, const std::vector<std::string> & comments){
     std::ofstream pdbFile(outputFilename);
     //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
     if (!pdbFile.is_open()) {
@@ -187,7 +112,7 @@ void PDBStructure::savePDBStructure(fs::path outputFilename, const std::vector<s
         pdbFile << 999 << " ";
         pdbFile << comment << std::endl;
     }
-                pdbFile.width(5);
+    pdbFile.width(5);
     // Write the modified atom records
     for (const auto& chainEntry : chains) {
         for (auto& residue : chainEntry.second) {
@@ -231,80 +156,100 @@ void PDBStructure::savePDBStructure(fs::path outputFilename, const std::vector<s
             }
         }
     }
-    //pdbFile << "ENDMDL"<< std::endl;
+    pdbFile << "ENDMDL"<< std::endl;
     pdbFile.close();
 }
 
-void PDBStructure::calculateAtomicFeatureMatrix() {
-    std::vector<std::vector<double>> feat_mat(numAtoms, std::vector<double>(12));
-    for (const auto& chainEntry : chains) {
-        for (auto &residue: chainEntry.second) {
-            for (const Atom &atom: residue.atoms) {
-                auto element = one_hot(atoms::ELEMENTS.at(atom.element), 8);
-                element.push_back(atoms::ELECTRONEGATIVITIES.at(atom.element));
-                element.push_back(atoms::N_VALENCE_ELECTRONS.at(atom.element));
-                element.push_back(atoms::FIRST_IONIZATION_ENERGIES.at(atom.element));
-                element.push_back(atoms::POLARIZABILITIES.at(atom.element));
-                feat_mat.push_back(element);
-            }
-        }
 
-
-    }
-    atomic_feat_mat = std::move(feat_mat);
-
+double calculateDistance(const Atom& atom1, const Atom& atom2) {
+    return std::sqrt(std::pow(atom2.coords - atom1.coords, 2).sum());
 }
 
-void PDBStructure::saveFeatureMat(fs::path outputPath, bool flush) {
-    auto outputFilename = outputPath/"at_feat.tsv";
-    if(!atomic_feat_mat.empty()) {
-        saveMatrixAsTSV(atomic_feat_mat, outputFilename);
-        if (flush) {
-            atomic_feat_mat.clear();
-        }
-    } else {
-        std::cerr << "Before saving a feature matrix, you should actually have one to begin with." << std::endl
-        << "I will forget about this and move on like nothing happened, but beware." << std::endl;
-    }
-}
 
-void PDBStructure::saveCoords(fs::path outputPath) {
-    auto outputFilename = outputPath/"coords.tsv";
-    std::ofstream coordinateFile(outputFilename);
-    //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
-    if (!coordinateFile.is_open()) {
-        std::cerr << "Error: Unable to open file " << outputFilename << std::endl;
-        return;
-    }
-    for (const auto& chainEntry : chains) {
-        for (auto &residue: chainEntry.second) {
-            for (const Atom &atom: residue.atoms) {
-                for(auto const& coord: atom.coords)
-                {
-                    coordinateFile << coord << "\t";
+
+void RandomPerturbator::calculateDistanceMatrix() {
+    dist_mat =  std::vector<std::vector<double>>(protein.numAtoms, std::vector<double>(protein.numAtoms, 0.0));
+    int currentIndex = 0;
+    // Iterate through the chainMap structure
+    for (const auto& chainEntry1 : protein.chains) {
+        for (auto const& residue1 : chainEntry1.second) {
+            for (const Atom& atom1 : residue1.atoms) {
+                int otherIndex = 0;
+                for (const auto& chainEntry2 : protein.chains) {
+                    for (auto const&  residue2 : chainEntry2.second) {
+                        for (const Atom& atom2 : residue2.atoms) {
+                            double distance = calculateDistance(atom1, atom2);
+                            dist_mat[currentIndex][otherIndex] = distance;
+                            if (currentIndex == otherIndex) {
+                                dist_mat.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
+                            }
+                            otherIndex++;
+                        }
+                    }
                 }
-                coordinateFile << std::endl;
+                currentIndex++;
             }
         }
-
-
     }
-
 }
 
-void PDBStructure::getNumberOfResidues() {
+std::vector<std::vector<double>> RandomPerturbator::calculateLocalDistanceMatrix(Residue &refres) {
+
+    std::vector<std::vector<double>> distanceMatrix =  std::vector<std::vector<double>>(protein.numAtoms, std::vector<double>(refres.atoms.size(), 0.0));
+
+    int currentIndex = 0;
+
+    // Iterate through the chainMap structure
+    for (const auto& chainEntry1 : protein.chains) {
+        for (auto const& residue1: chainEntry1.second) {
+            for (const Atom& atom1: residue1.atoms) {
+                int otherIndex = 0;
+                for (const Atom& atom2: refres.atoms) {
+                    double distance = calculateDistance(atom1, atom2);
+                    distanceMatrix.at(currentIndex).at(otherIndex) = distance;
+                    // Set diagonal elements to max
+                    if (residue1.resSeq == refres.resSeq && atom1 == atom2) {
+                        distanceMatrix.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
+                    }
+                    otherIndex++;
+                }
+                currentIndex++;
+            }
+        }
+    }
+    return distanceMatrix;
+}
+
+
+/*
+void PDBStructure::updateDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum){
+    auto atompos = chains.at(chain).at(resNum).atoms.at(0).serial-1;
+    for(std::size_t i{0}; i<numAtoms; i++)
+    {
+        for(int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
+            dist_mat.at(i).at(j) = newPart.at(i).at(j-atompos);
+            dist_mat.at(j).at(i) = newPart.at(i).at(j-atompos); // Symmetry. Maybe not optimal. IDK
+        }
+    }
+}
+*/
+
+
+
+
+void RandomPerturbator::getNumberOfResiduesPerChain() {
     std::cout << "Residue counts in each chain: " << std::endl;
     auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
-    std::for_each(chains.begin(), chains.end(), print_chain_n);
+    std::for_each(protein.chains.begin(), protein.chains.end(), print_chain_n);
     std::cout << std::endl;
 }
 
-void PDBStructure::findInterfaceResidues(double cutoff) {
+void RandomPerturbator::findInterfaceResidues(double cutoff) {
     std::map<char, std::vector<unsigned>> ifres;
-    for (const auto& chainEntry1 : chains) {
+    for (const auto& chainEntry1 : protein.chains) {
         ifres[chainEntry1.first] = std::vector<unsigned>();
         for (auto const& residue1 : chainEntry1.second) {
-            for (const auto& chainEntry2 : chains) {
+            for (const auto& chainEntry2 : protein.chains) {
                 if (chainEntry1.first != chainEntry2.first) {
                     for (auto const & residue2 : chainEntry2.second) {
                         if (areResiduesNeighbors(residue1, residue2, cutoff)) {
@@ -321,34 +266,30 @@ void PDBStructure::findInterfaceResidues(double cutoff) {
     interfaceResidues = std::move(ifres);
 }
 
-void PDBStructure::getInterfaceResidues() {
+void RandomPerturbator::getInterfaceResidues() {
     std::cout << "Found following number of interface residues in the chains: ";
     auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
     std::for_each(interfaceResidues.begin(), interfaceResidues.end(), print_chain_n);
     std::cout<< std::endl;
 }
 
-Residue PDBStructure::getResidue(char chain, unsigned int resSeq) {
-    if(chains.find(chain) != chains.end())
-        if(resSeq<chains.at(chain).size())
-            return chains.at(chain).at(resSeq);
+Residue RandomPerturbator::getResidue(char chain, unsigned int resSeq) {
+    if(protein.chains.find(chain) != protein.chains.end())
+        if(resSeq<protein.chains.at(chain).size())
+            return protein.chains.at(chain).at(resSeq);
     else return Residue();
 }
 
-void PDBStructure::setResidue(const Residue & res) {
-    chains.at(res.chainID).at(res.resSeq) = std::move(res);
+void RandomPerturbator::setResidue(const Residue & res) {
+    protein.chains.at(res.chainID).at(res.resSeq) = std::move(res);
 }
 
-std::vector<std::vector<double>> PDBStructure::getDistMat() {
+std::vector<std::vector<double>> RandomPerturbator::getDistMat() {
     return dist_mat;
 }
 
-void PDBStructure::saveDistMat(fs::path outputFilename) {
-    saveMatrixAsTSV(dist_mat, outputFilename);
 
-}
-
-std::pair<char, std::size_t> PDBStructure::chooseRandomResidue() const {
+std::pair<char, std::size_t> RandomPerturbator::chooseRandomResidue() const {
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
     std::size_t resindex = std::numeric_limits<std::size_t>::max();
@@ -378,186 +319,198 @@ std::pair<char, std::size_t> PDBStructure::chooseRandomResidue() const {
 
 }
 
-double PDBStructure::rotateResidueSidechainRandomly(char chain, std::size_t resNum) {
-    if (verbose)
-    {
-        std::cout <<  std::endl << "Size of chain: " << chains.at(chain).size() << std::endl << "Trying to perturb..." << std::endl;
+
+
+RandomPerturbator::RandomPerturbator(fs::path& pdb_path, bool verbose): verbose(verbose), protein(Protein(pdb_path)){
+
+}
+
+
+void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::size_t resNum) {
+    thread_local std::random_device thread_dev;
+    thread_local std::mt19937 thread_rng(thread_dev());
+    double angles = 10;
+    std::uniform_real_distribution<double> dist( -angles, angles);
+
+    bool rotationSuccess{false};
+    unsigned int try_cnt{0};
+
+    Residue ref_res(protein.chains.at(chain).at(resNum));
+    std::string resName = protein.chains.at(chain).at(resNum).resName;
+
+    auto a = findRotationAxis(protein.chains.at(chain).at(resNum), "N");
+    auto b = findRotationAxis(protein.chains.at(chain).at(resNum), "C");
+    auto axis = b-a;
+
+    while (!rotationSuccess && try_cnt < 10) {
+        double angle = dist(thread_rng);
+        for (Atom &atom: protein.chains.at(chain).at(resNum).atoms) rotateCoordinatesAroundAxis(atom.coords, a, axis / std::sqrt(std::pow(axis, 2).sum()), angle); // rotate around backbone
+
+        auto local_distance_matrix = this->calculateLocalDistanceMatrix(protein.chains.at(chain).at(resNum));
+
+        if (detect_clashes(local_distance_matrix, 0.21)) {
+            if (verbose)
+                std::cout << "Atoms clashed, try maybe a smaller, or another angle in the next iteration."
+                          << std::endl;
+            protein.chains.at(chain).at(resNum) = ref_res;
+            rotationSuccess = false;
+            try_cnt++;
+        } else rotationSuccess = true;
+    }
+}
+
+void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t resNum) {
+
+    if (verbose) {
+        std::cout << std::endl << "Size of chain: " << protein.chains.at(chain).size() << std::endl
+                  << "Trying to perturb..." << std::endl;
     }
 
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
 
     //this is where you could use your own distribution of angles
-    double angles = 10; // keep it small or change the clash cutoff, if not changed there could still be clashes...
+    double angles = 0.5; // keep it small or change the clash cutoff, if not changed there could still be clashes...
     // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
     // the greater the angle range gets, the greater should be the clash cutoff
     // optionally we could differentiate between types of atoms at clashes, but is it worth it?
-    std::uniform_real_distribution<double> dist( -angles, angles);
+    std::uniform_real_distribution<double> dist(-angles, angles);
 
-    Residue ref_res(chains.at(chain).at(resNum));
-    std::string resName = chains.at(chain).at(resNum).resName;
-    ref_res = chains.at(chain).at(resNum);
+    const Residue ref_res_const(protein.chains.at(chain).at(resNum));
+    Residue ref_res(protein.chains.at(chain).at(resNum));
+    std::string resName = protein.chains.at(chain).at(resNum).resName;
+    ref_res = protein.chains.at(chain).at(resNum);
 
+    bool rotationSuccess{false};
+    unsigned int try_cnt{0};
 
-    //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
-    double rmsd{0};
-    //we do not prefer GLY PRO and ALA. Maybe only for displacement
-    if(resName!="GLY" && resName!= "PRO" && resName!= "ALA" && amino_acids::axes::AMINO_MAP.find(resName) != amino_acids::axes::AMINO_MAP.end() ) {
-        for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
-            auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
-                                             amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
-            std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
-            auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index+1;
-
-            std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
-                    resName).end());
-
-            std::string secondary_pivot;
-
-            if(axis == "CB") secondary_pivot = "CA";
-            else
-            {
-                auto it_substructure_lp = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
-                                                 amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
-                --it_substructure_lp;
-                secondary_pivot = *it_substructure_lp;
-            }
-
-            auto point = findRotationAxis(chains.at(chain).at(resNum), axis);
-            std::valarray<double> rot_coords = point - findRotationAxis(chains.at(chain).at(resNum), secondary_pivot);
-
-            double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
-            double angle = dist(thread_rng);
-
-            for (Atom& atom: chains.at(chain).at(resNum).atoms)
-                if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
-                    //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
-                    rotateCoordinatesAroundAxis(atom.coords, point, rot_coords / vec_norm, angle);
-
-                }
-        }
-
-        auto local_distance_matrix = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
-
-        if (detect_clashes(local_distance_matrix, 0.21)) {
-            if (verbose) std::cout << "Atoms clashed, retrying..." << std::endl;
-            chains.at(chain).at(resNum) = ref_res;
-            angles = angles / 10;
-            std::uniform_real_distribution<double> dist(-angles, angles);
-        } else  // update distance matrix
-
-        rmsd = calculateRMSD(ref_res.atoms, chains.at(chain).at(resNum).atoms);
-
-    }
-    return rmsd;
-}
-
-double PDBStructure::rotateResidueSideChain(char chain, std::size_t resNum) {
-
-
-    bool rotationSuccess = false;
-    Residue ref_res(chains.at(chain).at(resNum));
-    std::string resName = chains.at(chain).at(resNum).resName;
-
-
-    //std::cout << "Changing residue: "<< chain << "/" <<resName<<":"<< resNum+1<< std::endl;
-    double rmsd{0};
-    //we do not prefer GLY PRO and ALA. Maybe only for displacement
     if (resName != "GLY" && resName != "PRO" && resName != "ALA" &&
         amino_acids::axes::AMINO_MAP.find(resName) != amino_acids::axes::AMINO_MAP.end()) {
         for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
             rotationSuccess = false;
-            while (!rotationSuccess) {
+            try_cnt=0;
+            while (!rotationSuccess && try_cnt < 10) {
+
+                //find names of atoms to rotate
                 auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
                                                  amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
                 std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
-                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index +1;
 
+                //iterator of atoms we will rotate
+                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index + 1;
                 std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
                         resName).end());
+
+                //now we create an actual rotation axis for the atoms
                 std::string secondary_pivot;
 
-                if(axis == "CB") secondary_pivot = "CA";
-                else
-                {
-                    auto it_substructure = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
-                                                     amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
-                    --it_substructure;
-                    secondary_pivot = *it_substructure;
+                if (axis == "CB") secondary_pivot = "CA";
+                else {
+                    auto it_substructure_lp = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
+                                                        amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
+                    --it_substructure_lp;
+                    secondary_pivot = *it_substructure_lp;
                 }
-                std::cout << "Primary pivot: "<< axis << " secondary pivot: " << secondary_pivot << std::endl;
-                auto point = findRotationAxis(chains.at(chain).at(resNum), axis);
-                std::valarray<double> rot_coords =  point - findRotationAxis(chains.at(chain).at(resNum), secondary_pivot);
+                if (verbose) std::cout << "I have tried to rotate the atoms around the " << secondary_pivot << "---" << axis << " " << try_cnt+1 << " times." << std::endl;
+                //get the coordinates of the two atoms on the axis
+                auto a = findRotationAxis(protein.chains.at(chain).at(resNum), axis);
+                auto b = findRotationAxis(protein.chains.at(chain).at(resNum), secondary_pivot);
+                auto rot_axis = b - a;
 
-                double vec_norm = std::sqrt(std::pow(rot_coords, 2).sum());
-                double angle;
-                std::cout << "Specify an angle you want to use for the current axis: " << std::endl;
-                std::cin >> angle;
+                //random angle
+                double angle = dist(thread_rng);
 
-                for (Atom &atom: chains.at(chain).at(resNum).atoms)
-                    if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name)) {
-                        //if (verbose) std::cout << "Performing a rotation after " << *first << std::endl;
-                        rotateCoordinatesAroundAxis(atom.coords, point, rot_coords / vec_norm, angle);
-
-                    }
+                for (Atom &atom: protein.chains.at(chain).at(resNum).atoms)
+                    if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name))
+                        rotateCoordinatesAroundAxis(atom.coords, a, rot_axis / std::sqrt(std::pow(rot_axis, 2).sum()),
+                                                    angle);
 
 
-                auto local_distance_matrix = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
+                auto local_distance_matrix = this->calculateLocalDistanceMatrix(protein.chains.at(chain).at(resNum));
 
                 if (detect_clashes(local_distance_matrix, 0.21)) {
-                    if (verbose)
-                        std::cout << "Atoms clashed, try maybe a smaller, or another angle in the next iteration."
-                                  << std::endl;
-                    chains.at(chain).at(resNum) = ref_res;
+                    if (verbose) std::cout << "Atoms clashed, retrying..." << std::endl;
+                    protein.chains.at(chain).at(resNum) = ref_res;
+                    //if there is a clash we adapt the possible angles to be smaller.
+                    angles = angles / 10;
+                    std::uniform_real_distribution<double> dist(-angles, angles);
                     rotationSuccess = false;
-                } else {
-                    this->updateDistanceMatrixLocally(local_distance_matrix, chain, resNum); // update distance matrix
-                    rotationSuccess = true;
-                }
-                rmsd = calculateRMSD(ref_res.atoms, chains.at(chain).at(resNum).atoms);
+                    try_cnt++;
 
+                } else {
+                    rotationSuccess = true;
+                    ref_res = protein.chains.at(chain).at(resNum);
+                    try_cnt++;
+                }
+            }
+
+        }
+
+
+    }
+}
+
+
+void RandomPerturbator::saveCoords(const fs::path& outputPath) {
+
+    auto outputFilename = outputPath/"coords.tsv";
+    std::ofstream coordinateFile(outputFilename);
+    //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
+    if (!coordinateFile.is_open()) {
+        std::cerr << "Error: Unable to open file " << outputFilename << std::endl;
+        return;
+    }
+    for (const auto& chainEntry : protein.chains) {
+        for (auto &residue: chainEntry.second) {
+            for (const Atom &atom: residue.atoms) {
+                for(auto const& coord: atom.coords)
+                {
+                    coordinateFile << coord << "\t";
+                }
+                coordinateFile << std::endl;
             }
         }
-        return rmsd;
 
 
     }
 }
 
-double  PDBStructure::rotateResidueAroundBackbone(char chain, std::size_t resNum){
-    bool rotationSuccess = false;
-    Residue ref_res(chains.at(chain).at(resNum));
-    std::string resName = chains.at(chain).at(resNum).resName;
-    auto a = findRotationAxis(chains.at(chain).at(resNum), "N");
-    auto b = findRotationAxis(chains.at(chain).at(resNum), "C");
-    auto axis = b-a;
-    double angle;
-    std::cout << "Angle: ";
-    std::cin >> angle;
-    double rmsd{0};
-    while (!rotationSuccess) {
-        for (Atom &atom: chains.at(chain).at(resNum).atoms) {
-            rotateCoordinatesAroundAxis(atom.coords, a, axis / std::sqrt(std::pow(axis, 2).sum()), angle);
-        }
-        auto local_distance_matrix = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
-
-        if (detect_clashes(local_distance_matrix, 0.21)) {
-            if (verbose)
-                std::cout << "Atoms clashed, try maybe a smaller, or another angle in the next iteration."
-                          << std::endl;
-            chains.at(chain).at(resNum) = ref_res;
-            rotationSuccess = false;
-        } else {
-            rotationSuccess = true;
-        }
-
-    }
-    rmsd = calculateRMSD(ref_res.atoms, chains.at(chain).at(resNum).atoms);
-    return rmsd;
-
+void RandomPerturbator::saveDistMat(const fs::path& outputFile) {
+    saveMatrixAsTSV(dist_mat, outputFile);
 }
-void PDBStructure::saveLocalDistMat(fs::path outputFile, char chain, int resNum) {
-    auto local_dist_mat = this->calculateLocalDistanceMatrix(chains.at(chain).at(resNum));
+
+void RandomPerturbator::saveLocalDistMat(const fs::path& outputFile, char chain, int resNum) {
+    auto local_dist_mat = this->calculateLocalDistanceMatrix(protein.chains.at(chain).at(resNum));
     saveMatrixAsTSV(local_dist_mat, outputFile);
 }
 
+void RandomPerturbator::setDistanceMatrixLocally(std::vector<std::vector<double>> &newPart, char chain,
+                                                 unsigned int resNum) {
+    auto atompos = protein.chains.at(chain).at(resNum).atoms.at(0).serial-1;
+    for(std::size_t i{0}; i<protein.numAtoms; i++)
+    {
+        for(int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
+            dist_mat.at(i).at(j) = newPart.at(i).at(j-atompos);
+            dist_mat.at(j).at(i) = newPart.at(i).at(j-atompos); // Symmetry. Maybe not optimal. IDK
+        }
+    }
+}
+
+double RandomPerturbator::calculateRMSD(const Residue &ref_res) {
+    if (ref_res.atoms.size() != protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms.size()) {
+        std::cerr << "Error: Sets of atomic coordinates must have the same size." << std::endl;
+        return -1.0; // Return an error value
+    }
+    double sumSquaredDifferences = 0.0;
+    std::size_t numAtoms = ref_res.atoms.size();
+
+    for (std::size_t i = 0; i < numAtoms; ++i) {
+        sumSquaredDifferences +=  std::pow(ref_res.atoms[i].coords - protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms[i].coords, 2).sum();
+    }
+
+    return std::sqrt(sumSquaredDifferences / static_cast<double>(numAtoms));
+}
+
+void RandomPerturbator::saveToPDB(fs::path & outputFilename, const std::vector<std::string> & comments) {
+    protein.saveToPDB(outputFilename, comments);
+}
