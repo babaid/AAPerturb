@@ -57,6 +57,7 @@ def clean_pdbs(input_dir:str, output_dir:str):
     with alive_bar(len(os.listdir(input_dir)), force_tty=True) as bar:
         for file in os.listdir(input_dir):
             if file.endswith(".pdb"):
+                bar()
                 if os.path.isfile(os.path.join(output_dir, file)):
                     continue
                 pdb_df = PandasPdb().read_pdb(os.path.join(input_dir, file))
@@ -91,7 +92,7 @@ def clean_pdbs(input_dir:str, output_dir:str):
                 pdb["atom_number"] = pdb.index+1
                 pdb["b_factor"] = 0.0
                 save_to_pdb(pdb, os.path.join(output_dir, file))
-            bar()
+
 
 if __name__ == "__main__":
 
