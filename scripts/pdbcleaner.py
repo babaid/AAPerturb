@@ -61,6 +61,11 @@ def clean_pdbs(input_dir:str, output_dir:str):
                 pdb_df.label_models()
                 pdb_df = pdb_df.get_model(1)
                 pdb = pdb_df.df["ATOM"]
+                residues = pdb["residue_name"].unique()
+                nucleotides= ["DA", "DC", "DG", "DT", "DI"]
+                has_nucleotides = any(item in nucleotides for item in residues)
+                if has_nucleotides:
+                    continue
                 pdb.drop(columns=["model_id"], inplace=True)
                 mask = pdb["alt_loc"] == ""
                 pdb = pdb[mask].copy()
