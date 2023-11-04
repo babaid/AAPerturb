@@ -53,5 +53,6 @@ add_executable(aaperturb-single-rot
 )
 
 target_link_libraries(aaperturb argparse)
+target_link_libraries(aaperturb-single-rot argparse)
 
 install(TARGETS aaperturb aaperturb-single-rot DESTINATION ${CMAKE_INSTALL_PREFIX})

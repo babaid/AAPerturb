@@ -274,10 +274,12 @@ void RandomPerturbator::getInterfaceResidues() {
 }
 
 Residue RandomPerturbator::getResidue(char chain, unsigned int resSeq) {
-    if(protein.chains.find(chain) != protein.chains.end())
-        if(resSeq<protein.chains.at(chain).size())
+    if((protein.chains.find(chain) != protein.chains.end())) {
+        if (resSeq < protein.chains.at(chain).size()) {
             return protein.chains.at(chain).at(resSeq);
-    else return Residue();
+        }
+    }
+    return Residue();
 }
 
 void RandomPerturbator::setResidue(const Residue & res) {
@@ -360,7 +362,6 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
 }
 
 void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t resNum) {
-
     if (verbose) {
         std::cout << std::endl << "Size of chain: " << protein.chains.at(chain).size() << std::endl
                   << "Trying to perturb..." << std::endl;
@@ -486,10 +487,10 @@ void RandomPerturbator::saveLocalDistMat(const fs::path& outputFile, char chain,
 
 void RandomPerturbator::setDistanceMatrixLocally(std::vector<std::vector<double>> &newPart, char chain,
                                                  unsigned int resNum) {
-    auto atompos = protein.chains.at(chain).at(resNum).atoms.at(0).serial-1;
+    long unsigned int atompos = protein.chains.at(chain).at(resNum).atoms.at(0).serial-1;
     for(std::size_t i{0}; i<protein.numAtoms; i++)
     {
-        for(int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
+        for(long unsigned int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
             dist_mat.at(i).at(j) = newPart.at(i).at(j-atompos);
             dist_mat.at(j).at(i) = newPart.at(i).at(j-atompos); // Symmetry. Maybe not optimal. IDK
         }

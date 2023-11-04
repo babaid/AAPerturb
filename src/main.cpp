@@ -228,7 +228,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
     Pbar.print("0/0");
     for (unsigned int batch_start{0}; batch_start < files.size();batch_start+=batch_size) {
-        int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));
+        unsigned int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));
         for(unsigned int i{batch_start}; i<batch_end;++i){
             //filesystem stuff
             fs::path filedir{files[i].filename()};
