@@ -24,7 +24,10 @@ void ProgressBar::print(std::string message) {
     for (int a = 0; a < amountOfFiller; a++) { //Print out current progress
         std::cout << pBarFiller;
     }
-    std::cout << pBarUpdater[currUpdateVal];
+    if(currentProgress!=neededProgress)
+    {
+        std::cout << pBarUpdater[currUpdateVal];
+    }
     for (int b = 0; b < pBarLength - amountOfFiller; b++) { //Print out spaces
         std::cout << " ";
     }
