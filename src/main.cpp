@@ -15,7 +15,6 @@
 #include<chrono>
 #include<argparse/argparse.hpp>
 #include "molecules.h"
-#include "geometry.h"
 #include "io.h"
 #include "fancy.h"
 #include "threadpool.h"
@@ -30,7 +29,6 @@ void createdataset(const std::string, const std::string, const unsigned int, con
 void perturbRun(fs::path, fs::path, unsigned int, const bool);
 
 
-std::size_t number_of_files_in_directory(fs::path path);
 int main(int argc, char *argv[]) {
 
     argparse::ArgumentParser program("aaperturb", "1.2.0");
@@ -71,13 +69,6 @@ int main(int argc, char *argv[]) {
         std::cout << "Running in verbose mode." << std::endl;
         verbose = true;
     }
-
-    //if(program["-f"] == true)
-    //{
-    //    if (verbose) std::cout << "You forced me to use force." << std::endl;
-    //    force=true;
-    //}
-
     fs::path input_dir, output_dir;
     if (auto ifn = program.present("-i"))
     {
@@ -127,10 +118,10 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                 RandomPerturbator(input_filename, verbose));
 
 
-        auto path = out / "extracted";
+        //auto path = out / "extracted";
 
-        if (!fs::is_directory(path)) fs::create_directory(path);
-        if (!fs::exists(path / "coords.tsv")) pert->saveCoords(path);
+        //if (!fs::is_directory(path)) fs::create_directory(path);
+        //if (!fs::exists(path / "coords.tsv")) pert->saveCoords(path);
 
         if (verbose) {
             pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
@@ -265,9 +256,3 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     }
 }
 
-std::size_t number_of_files_in_directory(fs::path path)
-{
-    using std::filesystem::directory_iterator;
-    using fp = bool (*)( const std::filesystem::path&);
-    return std::count_if(directory_iterator(path), directory_iterator{}, (fp)std::filesystem::is_regular_file);
-}

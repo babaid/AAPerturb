@@ -46,3 +46,10 @@ void saveMatrixAsTSV(std::vector<std::vector<double>> & mat, fs::path outputFile
     TSVFile.close();
 }
 
+std::size_t number_of_files_in_directory(fs::path path)
+{
+    using std::filesystem::directory_iterator;
+    using fp = bool (*)( const std::filesystem::path&);
+    return std::count_if(directory_iterator(path), directory_iterator{}, (fp)std::filesystem::is_regular_file);
+}
+
