@@ -412,7 +412,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
                     --it_substructure_lp;
                     secondary_pivot = *it_substructure_lp;
                 }
-                if (verbose) std::cout << "I have tried to rotate the atoms around the " << secondary_pivot << "---" << axis << " " << try_cnt+1 << " times." << std::endl;
+                if (verbose) std::cout << "I have tried to rotate the atoms around the " << secondary_pivot << "---" << axis << " " << try_cnt+1 << " axis times." << std::endl;
                 //get the coordinates of the two atoms on the axis
                 auto a = findRotationAxis(protein.chains.at(chain).at(resNum), axis);
                 auto b = findRotationAxis(protein.chains.at(chain).at(resNum), secondary_pivot);
@@ -430,7 +430,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
                 auto local_distance_matrix = this->calculateLocalDistanceMatrix(protein.chains.at(chain).at(resNum));
 
                 if (detect_clashes(local_distance_matrix, 0.21)) {
-                    if (verbose) std::cout << "Atoms clashed, retrying..." << std::endl;
+                    if (verbose) std::cout << "--> Atoms clashed <--" << std::endl;
                     protein.chains.at(chain).at(resNum) = ref_res;
                     //if there is a clash we adapt the possible angles to be smaller.
                     angles = angles / 10;

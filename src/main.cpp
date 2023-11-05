@@ -226,8 +226,22 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
 
-    Pbar.print("0/0");
+
+    if(!verbose){Pbar.print("0/0");}
     for (unsigned int batch_start{0}; batch_start < files.size();batch_start+=batch_size) {
+        std::this_thread::sleep_for(0.5s);
+        if (!verbose) {
+            Pbar.update();
+            std::string msg = std::to_string(static_cast<int>( batch_start / batch_size + 1 )) + '/' +
+                              std::to_string((int) (files.size() / batch_size));
+            Pbar.print(msg);
+        }
+        else {
+            std::cout << "Working on batch " << static_cast<int>(batch_start / batch_size + 1 )
+                      << "/" << (int) (files.size() / batch_size)
+                      << "." << std::endl;
+        }
+
         unsigned int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));
         for(unsigned int i{batch_start}; i<batch_end;++i){
             //filesystem stuff
@@ -235,11 +249,6 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             filedir.replace_extension("");
             fs::path out = outputdir / filedir;
             if (fs::is_directory(out)) {
-                if (!verbose) {
-                    std::string msg = std::to_string(static_cast<int>(i / batch_size + 1)) + '/' +
-                                      std::to_string((int) (files.size() / batch_size + 1));
-                    Pbar.print(msg);
-                }
                 if (number_of_files_in_directory(out) == num_variations_per_protein) {}//Pbar.update();}
             } else fs::create_directory(out);
 
@@ -248,16 +257,8 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
             std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
             futures.emplace_back(std::move(result));
 
-            if (!verbose) {
-
-                Pbar.update();
-                std::string msg = std::to_string(static_cast<int>(i / batch_size + 1 )) + '/' +
-                                  std::to_string((int) (files.size() / batch_size + 1));
-                Pbar.print(msg);
-            } else  std::cout << "Batch " << static_cast<int>(i / batch_size + 1 )
-                              << "/" << (int) (files.size() / batch_size + 1)
-                              << " is done." << std::endl;
         }
+
 
         //std::this_thread::sleep_for(std::chrono::seconds((int)batch_size)); //longest operation takes about a second
 
