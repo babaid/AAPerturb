@@ -102,22 +102,9 @@ int main(int argc, char *argv[]) {
     std::size_t num_variations = program.get<std::size_t >("-N");
     std::size_t batch_size = program.get<std::size_t>("-b");
 
-
-    //auto pdb = parsePDB("../_out/1qse.pdb", verbose=true);
-    /*for (auto& chain:*pdb)
-    {
-        std::cout << chain.first << ":" << chain.second.size() << std::endl;
-        if (chain.first == 'D') {
-            for (auto &el: chain.second) std::cout << el.resSeq << std::endl;
-        }
-    }*/
-
-    std::cout<< "Starting"<< std::endl;
+    std::cout<< "Starting dataset generation."<< std::endl;
     createdataset(input_dir, output_dir, num_variations, batch_size, verbose);
-    //std::unique_ptr<PDBStructure> structure = std::make_unique<PDBStructure>(PDBStructure("../test/cleaned/1avg.pdb"));
-    //structure->calculateDistanceMatrix();
-    //structure->saveDistMat("../dm.tsv");
-    std::cout << "Dataset creation finished" << std::endl;
+    std::cout << "Dataset generation finished" << std::endl;
     return 0;
 }
 
