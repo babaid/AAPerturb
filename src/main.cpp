@@ -161,7 +161,6 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                 if (verbose) std::cout << "Something was not right at " << input_filename << std::endl;
                 continue;
             }
-
             if (verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
             if (rmsd == 0.0) {
                 perturbcntr--;
@@ -169,7 +168,6 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             } else {
                 perturbcntr++;
             }
-
 
             std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first,
                                                std::to_string(res.second + 1));
