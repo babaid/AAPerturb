@@ -171,7 +171,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
             std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first,
                                                std::to_string(res.second + 1));
-            std::string comment2 = std::format("DISTMAT CHANGE INDEX: {} ",
+            std::string comment2 = std::format("DISTMAT CHANGE INDEX : {} ",
                                                std::to_string(ref_residue.atoms.at(0).serial));
             std::string comment3 = std::format("RMSD: {}", rmsd);
 
@@ -180,10 +180,10 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
             comments.push_back(comment3);
 
             if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
-            auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
+            //auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
             // save update stuff.
-            pert->saveLocalDistMat(out / distmat_fname, res.first,
-                                   res.second); //This either will make things fast or slow
+            //pert->saveLocalDistMat(out / distmat_fname, res.first,
+                                //   res.second); //This either will make things fast or slow
             pert->saveToPDB(out_path, comments); //usual
             pert->setResidue(ref_residue); //hm.
 

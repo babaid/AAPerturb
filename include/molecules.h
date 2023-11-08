@@ -2,8 +2,8 @@
 // Created by babaid on 09.09.23.
 //
 
-#ifndef AAPERTURB__MOLECULES_H
-#define AAPERTURB__MOLECULES_H
+#ifndef AAPERTURB_MOLECULES_H
+#define AAPERTURB_MOLECULES_H
 #include<vector>
 #include<string>
 #include<valarray>
@@ -40,6 +40,7 @@ struct Residue {
 
 struct Protein
 {
+    std::vector<char> chain_ordering;
     std::map<char, std::vector<Residue>> chains;
     unsigned int numAtoms{0};
     explicit Protein(fs::path&);
@@ -48,22 +49,19 @@ struct Protein
 };
 
 /*
- * The class RandomPerturbator can be used as a template for the definition of other classes of operations on proteins.
- *
+ * This class takes a Protein in PDB file format as input and allows to create other classes that manipulate the protein structure.
  */
-
-//This class takes a protein as a PDB file and can be used to randomly perturb a sidechain of an amino acid.
 class RandomPerturbator
 {
     bool verbose;
     Protein protein;
     std::map<char, std::vector<unsigned>> interfaceResidues;
-    std::vector<std::vector<double>> dist_mat;
+    //std::vector<std::vector<double>> dist_mat;
 
 public:
     RandomPerturbator(fs::path&, bool);
 
-    void calculateDistanceMatrix(); //Calculates distance matrix of one protein
+    //void calculateDistanceMatrix(); //Calculates distance matrix of one protein
     std::vector<std::vector<double>> calculateLocalDistanceMatrix(Residue& refres); //you can use any reference residue. This is extremely useful
     double calculateRMSD(const Residue& ref_res);
 
@@ -79,9 +77,9 @@ public:
 
 
     //savers
-    void saveCoords(const fs::path&);
-    void saveDistMat(const fs::path&);
-    void saveLocalDistMat(const fs::path&, char, int);
+    //void saveCoords(const fs::path&);
+    //void saveDistMat(const fs::path&);
+    //void saveLocalDistMat(const fs::path&, char, int);
     void saveToPDB(fs::path&, const std::vector<std::string>&);
 
     //getters
@@ -93,7 +91,7 @@ public:
 
     //setters
     void setResidue(const Residue&);
-    void setDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum); //subsitutes part of the distance matrix. Returns a new one. We dont want to change the original one.
+    //void setDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum); //subsitutes part of the distance matrix. Returns a new one. We dont want to change the original one.
 
 };
 
