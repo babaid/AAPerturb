@@ -103,7 +103,10 @@ int main(int argc, char *argv[]) {
         pert->findInterfaceResidues(12.0);
 
         if (verbose) std::cout << "Saving interface residues" << std::endl;
-        fs::path json_file{output_dir/file.stem()/"interfaces.json"};
+        std::string iface =  "_interfaces.json";
+        std::string fname = file.stem();
+        std::string fout = fname+iface;
+        fs::path json_file{output_dir/fout};
         pert->saveInterfaceResidues(json_file);
         if (verbose) {
             pert->getInterfaceResidues();
