@@ -51,11 +51,26 @@ add_executable(single_perturb
         src/fancy.cpp
 )
 
+add_executable(find_interfaces
+        src/find_interfaces.cpp
+        include/geometry.h
+        include/constants.h
+        src/geometry.cpp
+        include/io.h
+        src/io.cpp
+        include/molecules.h
+        src/molecules.cpp
+        src/fancy.cpp
+        include/fancy.h
+)
+
 
 
 target_link_libraries(aaperturb argparse)
 target_link_libraries(single_perturb argparse)
+target_link_libraries(find_interfaces argparse)
 
 
 install(TARGETS aaperturb DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(TARGETS single_perturb DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS find_interfaces DESTINATION ${CMAKE_INSTALL_PREFIX})

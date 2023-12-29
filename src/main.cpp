@@ -21,7 +21,7 @@
 
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
 using namespace std::chrono_literals;
-namespace fs = std::filesystem;       
+namespace fs = std::filesystem;
 bool verbose=false;
 //bool force = false;
 
@@ -131,7 +131,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
         pert->findInterfaceResidues(12.0);
 
         if (verbose) std::cout << "Saving interface residues" << std::endl;
-        fs::path json_file{out/"interfaces.json"};
+        fs::path json_file{out /"interfaces.json"};
         pert->saveInterfaceResidues(json_file);
         if (verbose) {
             pert->getInterfaceResidues();
