@@ -8,6 +8,7 @@
 #include<filesystem>
 #include<exception>
 #include<random>
+#include<set>
 #include "io.h"
 #include "molecules.h"
 #include "geometry.h"
@@ -256,13 +257,19 @@ void RandomPerturbator::findInterfaceResidues(double cutoff) {
     std::map<char, std::vector<unsigned>> ifres;
     for (const auto& chainEntry1 : protein.chains) {
         ifres[chainEntry1.first] = std::vector<unsigned>();
+        std::set<unsigned> addedResidues; // Set to track added residue sequence numbers
+
+        ifres[chainEntry1.first] = std::vector<unsigned>();
         for (auto const& residue1 : chainEntry1.second) {
             for (const auto& chainEntry2 : protein.chains) {
                 if (chainEntry1.first != chainEntry2.first) {
                     for (auto const & residue2 : chainEntry2.second) {
                         if (areResiduesNeighbors(residue1, residue2, cutoff)) {
                             // Check if residues are adjacent by comparing residue sequence numbers
-                            ifres[chainEntry1.first].emplace_back(residue1.resSeq-1);
+                            if (!addedResidues.count(residue1.resSeq)) {
+                                ifres[chainEntry1.first].emplace_back(residue1.resSeq-1);
+                                addedResidues.insert(residue1.resSeq);
+                            }
                             //interfaceResidues.push_back(residue1.resSeq);
                             break;  // No need to check further for this residue1
                         }
