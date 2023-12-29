@@ -130,6 +130,9 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
         pert->findInterfaceResidues(12.0);
 
+        if (verbose) std::cout << "Saving interface residues" << std::endl;
+        fs::path json_file{out/"interfaces.json"};
+        pert->saveInterfaceResidues(json_file);
         if (verbose) {
             pert->getInterfaceResidues();
         }
@@ -186,6 +189,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                                 //   res.second); //This either will make things fast or slow
             pert->saveToPDB(out_path, comments); //usual
             pert->setResidue(ref_residue); //hm.
+
 
 
         }

@@ -67,6 +67,7 @@ public:
 
     //also magic
     void findInterfaceResidues(double);
+    void saveInterfaceResidues(fs::path&);
     [[nodiscard]] std::pair<char , std::size_t> chooseRandomResidue() const;
 
 

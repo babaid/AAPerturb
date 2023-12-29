@@ -274,6 +274,35 @@ void RandomPerturbator::findInterfaceResidues(double cutoff) {
     interfaceResidues = std::move(ifres);
 }
 
+void RandomPerturbator::saveInterfaceResidues(fs::path& outputFilename)
+{
+    std::ofstream file(outputFilename);
+    //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << outputFilename << std::endl;
+        return;
+    }
+
+    if (file.is_open()) {
+        file << "{\n";
+        for (const auto& kv : interfaceResidues) {
+            file << "  \"" << kv.first << "\": [";
+            const std::vector<unsigned>& vec = kv.second;
+            for (size_t i = 0; i < vec.size(); ++i) {
+                file << vec[i];
+                if (i != vec.size() - 1) {
+                    file << ", ";
+                }
+            }
+            file << "],\n";
+        }
+        file << "}\n";
+        file.close();
+        if (verbose) std::cout << "Map saved to " << outputFilename << std::endl;
+    } else {
+        std::cerr << "Unable to open file!" << std::endl;
+    }
+}
 void RandomPerturbator::getInterfaceResidues() {
     std::cout << "Found following number of interface residues in the chains: ";
     auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
@@ -484,3 +513,4 @@ double RandomPerturbator::calculateRMSD(const Residue &ref_res) {
 void RandomPerturbator::saveToPDB(fs::path & outputFilename, const std::vector<std::string> & comments) {
     protein.saveToPDB(outputFilename, comments);
 }
+
