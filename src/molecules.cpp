@@ -290,10 +290,11 @@ void RandomPerturbator::saveInterfaceResidues(fs::path& outputFilename)
             file << "  \"" << it->first << "\": [";
             const std::vector<unsigned>& vec = it->second;
             for (size_t j = 0; j < vec.size(); ++j) {
-                if ((vec[j]+1) != 0)
-                    file << vec[j]+1;
-                if (j != vec.size() - 1) {
-                    file << ", ";
+                if ((vec[j]+1) != 0) {
+                    file << vec[j] + 1;
+                    if (j != vec.size() - 1) {
+                        file << ", ";
+                    }
                 }
             }
             file << "]";
