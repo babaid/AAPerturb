@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Starting dataset generation." << std::endl;
         std::cout << "Output dir: " << out << std::endl;
     }
-    perturbRun(input_file, output_dir, num_variations, verbose);
+    perturbRun(input_file, out, num_variations, verbose);
     //createdataset(input_dir, output_dir, num_variations, batch_size, verbose);
     std::cout << "Perturbation finished." << std::endl;
     return 0;
