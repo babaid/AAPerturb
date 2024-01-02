@@ -56,6 +56,8 @@ class RandomPerturbator
     bool verbose;
     Protein protein;
     std::map<char, std::vector<unsigned>> interfaceResidues;
+    double maxRotAngleBB, maxRotAngleSCH;
+
     //std::vector<std::vector<double>> dist_mat;
 
 public:
@@ -90,8 +92,11 @@ public:
     Residue getResidue(char, unsigned);
 
 
+
     //setters
     void setResidue(const Residue&);
+    void setMaxRotAngleBB(double);
+    void setMaxRotAngleSCH(double);
     //void setDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum); //subsitutes part of the distance matrix. Returns a new one. We dont want to change the original one.
 
 };

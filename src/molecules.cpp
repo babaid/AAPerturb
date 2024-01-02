@@ -380,13 +380,28 @@ RandomPerturbator::RandomPerturbator(fs::path& pdb_path, bool verbose): verbose(
 }
 
 
+void RandomPerturbator::setMaxRotAngleBB(double BBangle)
+{
+    maxRotAngleBB = BBangle;
+}
+
+
+
+void RandomPerturbator::setMaxRotAngleSCH(double SCHangle)
+{
+    maxRotAngleSCH = SCHangle;
+}
+
+
+
 void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::size_t resNum) {
     //this is a fast version of the code, where it does not check for clashes. I schould work well,
-    // as esting showed that a 10 degree angle usually does not cause clashes.
+    // as testing showed that a 10 degree angle usually does not cause clashes.
+    // 10 degree is ok !!!!!
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
-    double angles = 10;
-    std::uniform_real_distribution<double> dist(-angles, angles);
+
+    std::uniform_real_distribution<double> dist(-maxRotAngleBB, maxRotAngleBB);
     Residue ref_res(protein.chains.at(chain).at(resNum));
     std::string resName = protein.chains.at(chain).at(resNum).resName;
     auto a = findRotationAxis(protein.chains.at(chain).at(resNum), "N");
@@ -411,11 +426,11 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
     thread_local std::mt19937 thread_rng(thread_dev());
 
     //this is where you could use your own distribution of angles
-    double angles = 5; // keep it small or change the clash cutoff, if not changed there could still be clashes...
+    //double angles = 5; // keep it small or change the clash cutoff, if not changed there could still be clashes...
     // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
     // the greater the angle range gets, the greater should be the clash cutoff
     // optionally we could differentiate between types of atoms at clashes, but is it worth it?
-    std::uniform_real_distribution<double> dist(-angles, angles);
+    std::uniform_real_distribution<double> dist(-maxRotAngleSCH, maxRotAngleSCH);
 
     const Residue ref_res_const(protein.chains.at(chain).at(resNum));
     Residue ref_res(protein.chains.at(chain).at(resNum));

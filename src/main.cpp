@@ -25,8 +25,8 @@ namespace fs = std::filesystem;
 bool verbose=false;
 //bool force = false;
 
-void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool);
-void perturbRun(fs::path, fs::path, unsigned int, const bool);
+void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool, double, double);
+void perturbRun(fs::path, fs::path, unsigned int, const bool, double, double);
 
 
 int main(int argc, char *argv[]) {
@@ -49,6 +49,16 @@ int main(int argc, char *argv[]) {
     program.add_argument("-N", "--num-variations")
             .scan<'d', std::size_t>()
             .default_value(std::size_t(1))
+            .help("The number of variations of a single protein.");
+
+    program.add_argument("-q", "--max-bbangle")
+            .scan<'g', double>()
+            .default_value(double(0.5))
+            .help("The number of variations of a single protein.");
+
+    program.add_argument("-w", "--max-schangle")
+            .scan<'g', double>()
+            .default_value(double(0.5))
             .help("The number of variations of a single protein.");
     //program.add_argument("-f", "--force")
     //        .help("Force recreation of already existent files in the output directory. Treat with care.")
@@ -92,9 +102,12 @@ int main(int argc, char *argv[]) {
 
     std::size_t num_variations = program.get<std::size_t >("-N");
     std::size_t batch_size = program.get<std::size_t>("-b");
+    double BBangle = program.get<double>("-q");
+    double SCHangle = program.get<double>("-w");
 
+    if (verbose) std::cout << "Maximal BB angle set to: " << BBangle<< std::endl<< "Maximal SCH angle set to: " << SCHangle << std::endl;
     std::cout<< "Starting dataset generation."<< std::endl;
-    createdataset(input_dir, output_dir, num_variations, batch_size, verbose);
+    createdataset(input_dir, output_dir, num_variations, batch_size, verbose, BBangle, SCHangle);
     std::cout << "Dataset generation finished" << std::endl;
     return 0;
 }
@@ -106,7 +119,7 @@ int main(int argc, char *argv[]) {
 /*
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
-void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, const bool verbose) {
+void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, const bool verbose, double BBangle, double SCHangle) {
     std::size_t perturbcntr{number_of_files_in_directory(out)};
     if (perturbcntr<num_perturbations) {
 
@@ -117,6 +130,8 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
                 RandomPerturbator(input_filename, verbose));
 
+        pert->setMaxRotAngleBB(BBangle);
+        pert->setMaxRotAngleSCH(SCHangle);
 
         //auto path = out / "extracted";
 
@@ -197,7 +212,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 }
 
 
-void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool verbose) {
+void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool verbose, double BBangle, double SCHangle) {
 
     //Batched threadpool. We wait calmly for each thread to finish, when they finished, we empty the queue of tasks, and start the next iteration.
     // I strictly want to enqueue just as many tasks as the batch size allows, avoiding any type of overflows
@@ -234,7 +249,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
 
             // filesystem stuff done
-            std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose);
+            std::future<void> result = pool.enqueue(perturbRun, files[i], out, num_variations_per_protein, verbose, BBangle, SCHangle);
             futures.emplace_back(std::move(result));
 
         }
