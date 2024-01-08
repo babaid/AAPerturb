@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
     argparse::ArgumentParser program("aaperturb", "1.2.0");
     program.add_argument("-v", "--verbose")
-            .help("Enable verbose mode. It is useful if you want to know if something is happening.")
+            .help("Enable verbose mode. You should use this only with a batch size of 1, otherwise weird stuff could happen.")
             .default_value(false)
             .implicit_value(true);
     program.add_argument("-i", "--input-dir")
@@ -54,12 +54,12 @@ int main(int argc, char *argv[]) {
     program.add_argument("-q", "--max-bbangle")
             .scan<'g', double>()
             .default_value(double(0.5))
-            .help("The number of variations of a single protein.");
+            .help("The maximal backbone rotation angle.");
 
     program.add_argument("-w", "--max-schangle")
             .scan<'g', double>()
             .default_value(double(0.5))
-            .help("The number of variations of a single protein.");
+            .help("The maximal sidechain rotation angle.");
     //program.add_argument("-f", "--force")
     //        .help("Force recreation of already existent files in the output directory. Treat with care.")
     //        .default_value(false)
