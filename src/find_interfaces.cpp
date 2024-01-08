@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
             .help("The directory containing the input PDB files which we want to perturb randomly.");
     program.add_argument("-o", "--output-dir")
             .required()
-            .help("The directory containing the output PDB which are perturbed randomly.");
+            .help("The directory containing the output interface json files.");
 
     try {
         program.parse_args(argc, argv);
