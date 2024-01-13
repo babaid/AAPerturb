@@ -72,6 +72,26 @@ python pdbcleaner.py -i [INPUT_DIR/FILE] -o [OUTPUT_DIR/FILE]
 
 It is going to clean all the files and save them. Specifying the input dir to be the same as the output dir is prohibited due to the safety of your dataset.
 
+### Running AAPerturb
+
+```
+aaperturb -i [STR] -o [STR] --max-bbangle [FLOAT] --max-schangle [FLOAT] 
+```
+
+You have to provide an input directory (where the cleaned PDB's are at), and an output directory. The last two arguments are how big of a torsion we allow on the backbone and the sidechains. Youd should choose small angles less than 20. This is because for small angles it is safe to assume that there are no clashes after perturbation, that is, we don't have to claculate distances between atoms and everything runs a lot faster.
+
+
+#### Note 1
+
+Of course you may want the perturbations to be "realistic" like the mentioned paper did. I gotta tell, they took a shurtcut and used FoldX (which uses the Dunbrack rotamers) to mutate/perturb residues as it seems. Given you have the torsion angle distributions from the Dunbrack library you can straightforwardly use them instead the uniform distribution that I did. 
+
+Of course this means that you have to be more careful about clashes, and also introduce some other stuff into the code.
+
+#### Note 2
+
+No one has actually tested if small perturbations work as well as the rotamers, which I am working on currently using a structural autoencoder. Stay tuned for more!
+
+
 
 
 
