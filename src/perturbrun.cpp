@@ -114,7 +114,9 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
 
         }
+        pert.reset();
     }
+
 }
 
 
