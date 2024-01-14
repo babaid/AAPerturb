@@ -1,32 +1,20 @@
 //Main executable...
 // Created by babaid on 07.09.23.
 //
-#include<string>
+
 #include<iostream>
 #include<filesystem>
-#include<array>
-#include<vector>
 #include<iterator>
-#include<algorithm>
 #include<thread>
-#include<format>
-#include<limits>
 #include<cmath>
-#include<chrono>
 #include<argparse/argparse.hpp>
-#include "molecules.h"
-#include "io.h"
-#include "fancy.h"
-#include "threadpool.h"
-
+#include "perturbrun.h"
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;
 bool verbose=false;
 //bool force = false;
 
-void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool);
-void perturbRun(fs::path, fs::path, unsigned int, const bool);
 
 
 int main(int argc, char *argv[]) {
@@ -46,7 +34,15 @@ int main(int argc, char *argv[]) {
             .scan<'d', std::size_t>()
             .default_value(std::size_t(1))
             .help("The number of variations of a single protein.");
+    program.add_argument("-q", "--max-bbangle")
+            .scan<'g', double>()
+            .default_value(double(0.5))
+            .help("The maximal backbone rotation angle.");
 
+    program.add_argument("-w", "--max-schangle")
+            .scan<'g', double>()
+            .default_value(double(0.5))
+            .help("The maximal sidechain rotation angle.");
     try {
         program.parse_args(argc, argv);
     }
@@ -79,10 +75,10 @@ int main(int argc, char *argv[]) {
             fs::create_directory(output_dir);
         }
     }
+
     std::size_t num_variations = program.get<std::size_t >("-N");
-
-
-
+    double BBangle = program.get<double>("-q");
+    double SCHangle = program.get<double>("-w");
 
     fs::path filedir{input_file.filename()};
     filedir.replace_extension("");
@@ -95,108 +91,10 @@ int main(int argc, char *argv[]) {
         std::cout << "Starting dataset generation." << std::endl;
         std::cout << "Output dir: " << out << std::endl;
     }
-    perturbRun(input_file, out, num_variations, verbose);
+    perturbRun(input_file, out, num_variations, verbose, BBangle, SCHangle);
     //createdataset(input_dir, output_dir, num_variations, batch_size, verbose);
     std::cout << "Perturbation finished." << std::endl;
     return 0;
-}
-
-
-
-
-
-/*
- * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
- */
-void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, const bool verbose) {
-    std::size_t perturbcntr{number_of_files_in_directory(out)};
-    if (perturbcntr<num_perturbations) {
-
-        if (verbose){
-            std::cout << "Opening " << input_filename << " for perturbation." << std::endl;
-        }
-
-        std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
-                RandomPerturbator(input_filename, verbose));
-
-
-        //auto path = out / "extracted";
-
-        //if (!fs::is_directory(path)) fs::create_directory(path);
-        //if (!fs::exists(path / "coords.tsv")) pert->saveCoords(path);
-
-        if (verbose) {
-            pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
-        }
-        if (verbose) std::cout << "Looking for interface residues." << std::endl;
-
-        pert->findInterfaceResidues(12.0);
-
-
-        if (verbose) std::cout << "Saving interface residues" << std::endl;
-        fs::path json_file{out/"interfaces.json"};
-        pert->saveInterfaceResidues(json_file);
-        if (verbose) {
-            pert->getInterfaceResidues();
-        }
-
-
-
-        while (perturbcntr < num_perturbations) {
-
-            std::string fname = std::to_string(perturbcntr) + ".pdb";
-            fs::path out_path = out / fname;
-
-            if (verbose) std::cout << "Choosing a random residue to perturb: ";
-
-            std::pair<char, std::size_t> res = pert->chooseRandomResidue();
-
-            if (verbose) std::cout << res.first << " : " << res.second << std::endl;
-            Residue ref_residue = pert->getResidue(res.first, res.second);
-
-            std::vector<std::string> comments;
-            if (verbose) std::cout << "Perturbing the chosen residue";
-
-            //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
-            double rmsd = std::numeric_limits<double>::infinity();
-            try {
-                pert->rotateResidueSidechainRandomly(res.first, res.second);
-                pert->rotateResidueAroundBackboneRandomly(res.first, res.second);
-                rmsd = pert->calculateRMSD(ref_residue);
-            }
-            catch (...) {
-                if (verbose) std::cout << "Something was not right at " << input_filename << std::endl;
-                continue;
-            }
-            if (verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
-            if (rmsd == 0.0) {
-                perturbcntr--;
-                continue;
-            } else {
-                perturbcntr++;
-            }
-
-            std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first,
-                                               std::to_string(res.second + 1));
-            std::string comment2 = std::format("DISTMAT CHANGE INDEX : {} ",
-                                               std::to_string(ref_residue.atoms.at(0).serial));
-            std::string comment3 = std::format("RMSD: {}", rmsd);
-
-            comments.push_back(comment1);
-            comments.push_back(comment2);
-            comments.push_back(comment3);
-
-            if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
-            //auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
-            // save update stuff.
-            //pert->saveLocalDistMat(out / distmat_fname, res.first,
-            //   res.second); //This either will make things fast or slow
-            pert->saveToPDB(out_path, comments); //usual
-            pert->setResidue(ref_residue); //hm.
-
-
-        }
-    }
 }
 
 
