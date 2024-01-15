@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 
 project(AAPerturb VERSION 1.2.0)
-set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O3 ")
+set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O2 ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 set(CMAKE_CXX_STANDARD_REQUIRED  ON)
 set(CMAKE_CXX_STANDARD 23)
@@ -36,25 +36,45 @@ add_executable(aaperturb
         include/fancy.h
         src/fancy.cpp
         include/threadpool.h
+        include/perturbrun.h
+        src/perturbrun.cpp
 )
 
-####
-#add_executable(aaperturb-single-rot
-#        include/geometry.h
-#        include/constants.h
-#        src/geometry.cpp
-#        test/test.cpp
-#        include/io.h
-#        src/io.cpp
-#        include/molecules.h
-##        src/molecules.cpp
-#        include/fancy.h
-#        src/fancy.cpp
-#        include/threadpool.h
-#)
+add_executable(single_perturb
+        src/single_perturb.cpp
+        include/geometry.h
+        include/constants.h
+        src/geometry.cpp
+        include/io.h
+        src/io.cpp
+        include/molecules.h
+        src/molecules.cpp
+        include/fancy.h
+        src/fancy.cpp
+        include/perturbrun.h
+        src/perturbrun.cpp
+)
+
+add_executable(find_interfaces
+        src/find_interfaces.cpp
+        include/geometry.h
+        include/constants.h
+        src/geometry.cpp
+        include/io.h
+        src/io.cpp
+        include/molecules.h
+        src/molecules.cpp
+        src/fancy.cpp
+        include/fancy.h
+)
+
+
 
 target_link_libraries(aaperturb argparse)
+target_link_libraries(single_perturb argparse)
+target_link_libraries(find_interfaces argparse)
 
-#target_link_libraries(aaperturb-single-rot argparse)
 
 install(TARGETS aaperturb DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS single_perturb DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS find_interfaces DESTINATION ${CMAKE_INSTALL_PREFIX})

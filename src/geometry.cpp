@@ -3,12 +3,11 @@
 #include<iostream>
 #include<valarray>
 #include<array>
-#include "constants.h"
 #include "geometry.h"
 #include "molecules.h"
 
 
-using Vector3 = std::valarray<double>;
+using Vector3 = std::array<double, 3>;
 
 // Function to rotate a vector around an arbitrary axis
 void rotateCoordinatesAroundAxis(Vector3& vector, const Vector3& p, const Vector3& axis, double angle) {
@@ -35,10 +34,12 @@ void rotateCoordinatesAroundAxis(Vector3& vector, const Vector3& p, const Vector
     vector[0] = x_new;
     vector[1] = y_new;
     vector[2] = z_new;
+
+    //bool memoryleak = false; // Anil's contribution.
 }
 
 
-std::valarray<double> findRotationAxis(const Residue& residue, const std::string& axis)
+Vector3 findRotationAxis(const Residue& residue, const std::string& axis)
 {
     unsigned cntr{0};
     for (const Atom& atom : residue.atoms) {
@@ -75,15 +76,15 @@ double calculateRMSD(const std::vector<Atom>& atoms1, const std::vector<Atom>& a
 
 
     for (std::size_t i = 0; i < numAtoms; ++i) {
-        sumSquaredDifferences +=  std::pow(atoms1[i].coords - atoms2[i].coords, 2).sum();
+        sumSquaredDifferences +=  sum(pow(atoms1[i].coords - atoms2[i].coords, 2));
     }
 
     return std::sqrt(sumSquaredDifferences / static_cast<double>(numAtoms));
 }
 
-std::valarray<double> calculateCentroid(const Residue& res)
+Vector3 calculateCentroid(const Residue& res)
 {
-    std::valarray<double> centroid{0., 0., 0.};
+    Vector3 centroid{0., 0., 0.};
     double num_atoms = res.atoms.size();
     for (const Atom& atom: res.atoms) {
         centroid+=atom.coords;
@@ -94,9 +95,9 @@ std::valarray<double> calculateCentroid(const Residue& res)
 
 
 bool areResiduesNeighbors(const Residue& residue1, const Residue& residue2, double threshold) {
-    std::valarray<double> cog1 = calculateCentroid(residue1);
-    std::valarray<double> cog2 = calculateCentroid(residue2);
-    double distance = std::sqrt(std::pow(cog2-cog1, 2).sum());
+    Vector3 cog1 = calculateCentroid(residue1);
+    Vector3 cog2 = calculateCentroid(residue2);
+    double distance = std::sqrt(sum(pow(cog2-cog1, 2)));
     if (distance<threshold)
     {
         return true;
@@ -104,21 +105,74 @@ bool areResiduesNeighbors(const Residue& residue1, const Residue& residue2, doub
     return false;
 }
 
+Vector3 operator-(const Vector3 a, const Vector3 b) {
+    Vector3 v;
+    for(unsigned i=0; i<3; i++)
+    {
+        v[i]=a[i]-b[i];
+    }
+    return v;
+}
 
-std::valarray<double> crossProduct(const std::valarray<double>& vector1, const std::valarray<double>& vector2) {
+Vector3 operator+(const Vector3 a, const Vector3 b) {
+    Vector3 v{a};
+    for(unsigned i=0; i<3; i++)
+    {
+        v[i]+=b[i];
+    }
+    return v;
+}
+
+void operator+=(Vector3& a, const Vector3& b)
+{
+    for (unsigned i{0}; i<3; i++) a[i]+=b[i];
+}
+
+void operator-=(Vector3& a, const Vector3& b)
+{
+    for (unsigned i{0}; i<3; i++) a[i]-=b[i];
+}
+
+Vector3 operator/(const Vector3& a, double d)
+{
+    Vector3 v;
+    for (unsigned i{0}; i<3; i++) v[i]=a[i]/d;
+    return v;
+}
+Vector3 pow(const Vector3 a, double p)
+{
+    Vector3 v;
+    for(unsigned i{0}; i<3; i++)
+    {
+        v[i] = std::pow(a[i], p);
+    }
+    return v;
+}
+
+double sum(const Vector3& v)
+{
+    double out{0};
+    for(auto& el:v)
+    {
+        out+=el;
+    }
+    return out;
+}
+
+Vector3 crossProduct(const Vector3& vector1, const Vector3& vector2) {
     if (vector1.size() != 3 || vector2.size() != 3) {
         std::cerr << "Error: Input vectors must have size 3." << std::endl;
-        return std::valarray<double>(0.0, 3); // Return a zero vector
+        return Vector3({0., 0., 0.}); // Return a zero vector
     }
 
     double resultX = vector1[1] * vector2[2] - vector1[2] * vector2[1];
     double resultY = vector1[2] * vector2[0] - vector1[0] * vector2[2];
     double resultZ = vector1[0] * vector2[1] - vector1[1] * vector2[0];
 
-    return std::valarray<double>({resultX, resultY, resultZ});
+    return Vector3({resultX, resultY, resultZ});
 }
 
-double norm(const std::valarray<double>& vec)
+double norm(const Vector3& vec)
 {
-    return std::sqrt(std::pow(vec, 2).sum());
+    return std::sqrt(sum(pow(vec, 2)));
 }
