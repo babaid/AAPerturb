@@ -55,7 +55,7 @@ namespace amino_acids{
         const std::vector<std::string> SER = {"CB", "OG"};
         const std::vector<std::string> THR = {"CB", "OG1", "CG2"};
         const std::vector<std::string> TRP = {"CB", "CG"};
-        const std::vector<std::string> TYR = {"CB", "CD1", "CE1", "CZ"};
+        const std::vector<std::string> TYR = {"CB", "CG"};
         const std::vector<std::string> VAL = {"CB"};
 
         const std::map<std::string, std::vector<std::string>> AMINO_MAP =  {

@@ -9,7 +9,6 @@
 #include<exception>
 #include<random>
 #include<set>
-#include "io.h"
 #include "molecules.h"
 #include "geometry.h"
 #include "constants.h"
@@ -170,7 +169,7 @@ void Protein::saveToPDB(fs::path& outputFilename, const std::vector<std::string>
 
 
 double calculateDistance(const Atom& atom1, const Atom& atom2) {
-    return std::sqrt(std::pow(atom2.coords - atom1.coords, 2).sum());
+    return std::sqrt(sum(pow(atom2.coords - atom1.coords, 2)));
 }
 
 
@@ -408,11 +407,7 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
     auto b = findRotationAxis(protein.chains.at(chain).at(resNum), "C");
     auto axis = b - a;
     double angle = dist(thread_rng);
-    for (Atom &atom: protein.chains.at(chain).at(resNum).atoms) rotateCoordinatesAroundAxis(atom.coords, a, axis /
-                                                                                                            std::sqrt(
-                                                                                                                    std::pow(
-                                                                                                                            axis,
-                                                                                                                            2).sum()),
+    for (Atom &atom: protein.chains.at(chain).at(resNum).atoms) rotateCoordinatesAroundAxis(atom.coords, a, axis /std::sqrt(sum(pow(axis,2.))),
                                                                                             angle); // rotate around backbone
 }
 void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t resNum) {
@@ -471,7 +466,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
 
                 for (Atom &atom: protein.chains.at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name))
-                        rotateCoordinatesAroundAxis(atom.coords, a, rot_axis / std::sqrt(std::pow(rot_axis, 2).sum()), angle);
+                        rotateCoordinatesAroundAxis(atom.coords, a, rot_axis / std::sqrt(sum(pow(rot_axis, 2.))), angle);
             }
         }
     }
@@ -534,7 +529,7 @@ double RandomPerturbator::calculateRMSD(const Residue &ref_res) {
     std::size_t numAtoms = ref_res.atoms.size();
 
     for (std::size_t i = 0; i < numAtoms; ++i) {
-        sumSquaredDifferences +=  std::pow(ref_res.atoms[i].coords - protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms[i].coords, 2).sum();
+        sumSquaredDifferences +=  sum(pow(ref_res.atoms[i].coords - protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms[i].coords, 2.));
     }
 
     return std::sqrt(sumSquaredDifferences / static_cast<double>(numAtoms));

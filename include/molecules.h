@@ -6,10 +6,12 @@
 #define AAPERTURB_MOLECULES_H
 #include<vector>
 #include<string>
-#include<valarray>
+#include<array>
 #include<map>
 #include<filesystem>
 namespace fs = std::filesystem;
+using Vector3 = std::array<double, 3>;
+
 //An atom record from a PDB file
 struct Atom {
     int serial;
@@ -18,7 +20,7 @@ struct Atom {
     char chainID;
     double occupancy;
     double tempFactor;
-    std::valarray<double> coords{0., 0., 0};
+    Vector3 coords{0., 0., 0};
     std::string name;
     std::string resName;
     std::string element;
@@ -88,7 +90,7 @@ public:
     //getters
     void getNumberOfResiduesPerChain();
     void getInterfaceResidues();
-    std::vector<std::vector<double>> getDistMat();
+    //std::vector<std::vector<double>> getDistMat();
     Residue getResidue(char, unsigned);
 
 
