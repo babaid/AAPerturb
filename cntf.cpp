@@ -1,5 +1,7 @@
 #include <iostream>
 #include <filesystem>
+#include <future>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -7,9 +9,13 @@ int countFiles(const fs::path& dirPath, const std::string& extension) {
     int count = 0;
     try {
         if (fs::exists(dirPath) && fs::is_directory(dirPath)) {
-            for (const auto& entry : fs::recursive_directory_iterator(dirPath)) {
+            for (const auto& entry : fs::directory_iterator(dirPath)) {
                 if (fs::is_regular_file(entry) && entry.path().extension() == extension) {
                     ++count;
+                } else if (fs::is_directory(entry)) {
+                    // Recursively spawn threads for subdirectories
+                    auto future = std::async(std::launch::async, countFiles, entry, extension);
+                    count += future.get();
                 }
             }
         } else {
