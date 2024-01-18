@@ -58,7 +58,7 @@ cmake -DCMAKE_INSTALL_PREFIX="PATH TO YOUR PREFERRED INSTALL DIR" ..
 make -jN aaperturb install 
 ```
 
-### Cleaning of PDB files.
+## Cleaning of PDB files.
 
 To produce output that is useful, a preprocessing step may be required, which deals with removal of waters, deprotonation, removal of alternate locations, removal of insertions and reindexing atoms and residues.
 This is crucial to the main program to run without bugs and random errors, and also the less atoms there are the less expensive calculations get.
@@ -72,7 +72,7 @@ python pdbcleaner.py -i [INPUT_DIR/FILE] -o [OUTPUT_DIR/FILE]
 
 It is going to clean all the files and save them. Specifying the input dir to be the same as the output dir is prohibited due to the safety of your dataset.
 
-### Running AAPerturb
+## Running AAPerturb
 
 ```
 aaperturb -i [STR] -o [STR] --max-bbangle [FLOAT] --max-schangle [FLOAT] 
@@ -90,6 +90,11 @@ Of course this means that you have to be more careful about clashes, and also in
 #### Note 2
 
 No one has actually tested if small perturbations work as well as the rotamers, which I am working on currently using a structural autoencoder. Stay tuned for more!
+
+
+### Contribute
+
+Interesting would be if someone found the time to implement the dunbrack stuff I mentioned for now.
 
 
 
