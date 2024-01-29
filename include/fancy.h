@@ -13,7 +13,7 @@ class ProgressBar {
 public:
     ProgressBar(int neededprogress);
     void update();
-    void print(std::string);
+    void print(const std::string&);
     std::string firstPartOfpBar = "[",
                 lastPartOfpBar = "]",
                 pBarFiller = "#",

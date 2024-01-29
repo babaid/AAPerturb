@@ -400,13 +400,17 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
 
-    std::uniform_real_distribution<double> dist(-maxRotAngleBB, maxRotAngleBB);
+    std::uniform_int_distribution<> dis(0, 1);
+    int direction = dis(thread_rng)*2-1;
+
+    std::normal_distribution dist{maxRotAngleBB, 3.0};
+    //std::uniform_real_distribution<double> dist(-maxRotAngleBB, maxRotAngleBB);
     Residue ref_res(protein.chains.at(chain).at(resNum));
     std::string resName = protein.chains.at(chain).at(resNum).resName;
     auto a = findRotationAxis(protein.chains.at(chain).at(resNum), "N");
     auto b = findRotationAxis(protein.chains.at(chain).at(resNum), "C");
     auto axis = b - a;
-    double angle = dist(thread_rng);
+    double angle = (direction*2-1)*dist(thread_rng);
     for (Atom &atom: protein.chains.at(chain).at(resNum).atoms) rotateCoordinatesAroundAxis(atom.coords, a, axis /std::sqrt(sum(pow(axis,2.))),
                                                                                             angle); // rotate around backbone
 }
@@ -425,7 +429,10 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
     // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
     // the greater the angle range gets, the greater should be the clash cutoff
     // optionally we could differentiate between types of atoms at clashes, but is it worth it?
-    std::uniform_real_distribution<double> dist(-maxRotAngleSCH, maxRotAngleSCH);
+    std::normal_distribution dist{maxRotAngleSCH, 3.0};
+    std::uniform_int_distribution<> dis(0, 1);
+
+    //std::uniform_real_distribution<double> dist(-maxRotAngleSCH, maxRotAngleSCH);
 
     const Residue ref_res_const(protein.chains.at(chain).at(resNum));
     Residue ref_res(protein.chains.at(chain).at(resNum));
@@ -462,7 +469,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
                 auto rot_axis = b - a;
 
                 //random angle
-                double angle = dist(thread_rng);
+                double angle = (dis(thread_rng)*2-1)*dist(thread_rng);
 
                 for (Atom &atom: protein.chains.at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name))

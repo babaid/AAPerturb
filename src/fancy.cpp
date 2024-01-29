@@ -17,7 +17,7 @@ void ProgressBar::update() {
     amountOfFiller = (int)((currentProgress / neededProgress)*(double)pBarLength);
 }
 
-void ProgressBar::print(std::string message) {
+void ProgressBar::print(const std::string& message) {
     currUpdateVal %= pBarUpdater.length();
     std::cout << "\r" //Bring cursor to start of line
               << firstPartOfpBar; //Print out first part of pBar

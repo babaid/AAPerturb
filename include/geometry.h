@@ -9,8 +9,8 @@
 
 using Vector3 = std::array<double, 3>;
 
-Vector3 operator-(const Vector3, const Vector3);
-Vector3 operator+(const Vector3, const Vector3);
+Vector3 operator-(const Vector3&, const Vector3&);
+Vector3 operator+(const Vector3&, const Vector3&);
 
 Vector3 pow(const Vector3, double);
 

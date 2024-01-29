@@ -105,7 +105,7 @@ bool areResiduesNeighbors(const Residue& residue1, const Residue& residue2, doub
     return false;
 }
 
-Vector3 operator-(const Vector3 a, const Vector3 b) {
+Vector3 operator-(const Vector3& a, const Vector3& b) {
     Vector3 v;
     for(unsigned i=0; i<3; i++)
     {
@@ -114,7 +114,7 @@ Vector3 operator-(const Vector3 a, const Vector3 b) {
     return v;
 }
 
-Vector3 operator+(const Vector3 a, const Vector3 b) {
+Vector3 operator+(const Vector3& a, const Vector3& b) {
     Vector3 v{a};
     for(unsigned i=0; i<3; i++)
     {
