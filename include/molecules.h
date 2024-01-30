@@ -89,7 +89,8 @@ public:
 
     //getters
     void getNumberOfResiduesPerChain();
-    void getInterfaceResidues();
+    std::map<char, std::vector<unsigned>> getInterfaceResidues();
+    void printInterfaceResidues();
     //std::vector<std::vector<double>> getDistMat();
     Residue getResidue(char, unsigned);
 

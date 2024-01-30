@@ -266,7 +266,7 @@ void RandomPerturbator::findInterfaceResidues(double cutoff) {
                         if (areResiduesNeighbors(residue1, residue2, cutoff)) {
                             // Check if residues are adjacent by comparing residue sequence numbers
                             if (!addedResidues.count(residue1.resSeq)) {
-                                ifres[chainEntry1.first].emplace_back(residue1.resSeq-1);
+                                ifres[chainEntry1.first].emplace_back(residue1.resSeq);
                                 addedResidues.insert(residue1.resSeq);
                             }
                             //interfaceResidues.push_back(residue1.resSeq);
@@ -317,17 +317,21 @@ void RandomPerturbator::saveInterfaceResidues(fs::path& outputFilename)
         std::cerr << "Unable to open file!" << std::endl;
     }
 }
-void RandomPerturbator::getInterfaceResidues() {
+void RandomPerturbator::printInterfaceResidues() {
     std::cout << "Found following number of interface residues in the chains: ";
     auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
     std::for_each(interfaceResidues.begin(), interfaceResidues.end(), print_chain_n);
     std::cout<< std::endl;
 }
-
+std::map<char, std::vector<unsigned>> RandomPerturbator::getInterfaceResidues()
+{
+    return interfaceResidues;
+}
 Residue RandomPerturbator::getResidue(char chain, unsigned int resSeq) {
+
     if((protein.chains.find(chain) != protein.chains.end())) {
         if (resSeq < protein.chains.at(chain).size()) {
-            return protein.chains.at(chain).at(resSeq);
+            return Residue(protein.chains.at(chain).at(resSeq));
         }
     }
     return Residue();
