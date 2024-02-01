@@ -12,6 +12,7 @@
 #include "molecules.h"
 #include "geometry.h"
 #include "constants.h"
+#include "angles.h"
 
 namespace fs=std::filesystem;
 
@@ -404,17 +405,16 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
 
-    std::uniform_int_distribution<> dis(0, 1);
-    int direction = dis(thread_rng)*2-1;
 
-    std::normal_distribution dist{maxRotAngleBB, 3.0};
+
+    std::normal_distribution dist{0., maxRotAngleSCH};
     //std::uniform_real_distribution<double> dist(-maxRotAngleBB, maxRotAngleBB);
     Residue ref_res(protein.chains.at(chain).at(resNum));
     std::string resName = protein.chains.at(chain).at(resNum).resName;
     auto a = findRotationAxis(protein.chains.at(chain).at(resNum), "N");
     auto b = findRotationAxis(protein.chains.at(chain).at(resNum), "C");
     auto axis = b - a;
-    double angle = (direction*2-1)*dist(thread_rng);
+    double angle = dist(thread_rng);
     for (Atom &atom: protein.chains.at(chain).at(resNum).atoms) rotateCoordinatesAroundAxis(atom.coords, a, axis /std::sqrt(sum(pow(axis,2.))),
                                                                                             angle); // rotate around backbone
 }
@@ -433,11 +433,9 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
     // rule of thumb <10 clash_cutoff -> 0.21 (approx. hydrogen covalent radius)
     // the greater the angle range gets, the greater should be the clash cutoff
     // optionally we could differentiate between types of atoms at clashes, but is it worth it?
-    std::normal_distribution dist{maxRotAngleSCH, 3.0};
-    std::uniform_int_distribution<> dis(0, 1);
 
     //std::uniform_real_distribution<double> dist(-maxRotAngleSCH, maxRotAngleSCH);
-
+    std::normal_distribution<double> dist{maxRotAngleSCH, 1.0};
     const Residue ref_res_const(protein.chains.at(chain).at(resNum));
     Residue ref_res(protein.chains.at(chain).at(resNum));
     std::string resName = protein.chains.at(chain).at(resNum).resName;
@@ -458,14 +456,22 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
 
                 //now we create an actual rotation axis for the atoms
                 std::string secondary_pivot;
-
-                if (axis == "CB") secondary_pivot = "CA";
+                double angle;
+                if (axis == "CB") {
+                    secondary_pivot = "CA";
+                    angle = chi1(); //Choose chi1 rotamerically, but evenly distributed.
+                }
+                else if (axis[0] == 'CG') {
+                    angle =chi1();
+                }
                 else {
                     auto it_substructure_lp = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
                                                         amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
                     --it_substructure_lp;
                     secondary_pivot = *it_substructure_lp;
+                    angle = dist(thread_rng); // chose all the other ones randomly
                 }
+
                 if (verbose) std::cout << "I have rotated the atoms around the " << secondary_pivot << "---" << axis << " " <<  " axis." << std::endl;
                 //get the coordinates of the two atoms on the axis
                 auto a = findRotationAxis(protein.chains.at(chain).at(resNum), axis);
@@ -473,7 +479,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
                 auto rot_axis = b - a;
 
                 //random angle
-                double angle = (dis(thread_rng)*2-1)*dist(thread_rng);
+
 
                 for (Atom &atom: protein.chains.at(chain).at(resNum).atoms)
                     if (std::count(sub_atoms.begin(), sub_atoms.end(), atom.name))

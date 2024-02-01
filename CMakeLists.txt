@@ -38,6 +38,8 @@ add_executable(aaperturb
         include/threadpool.h
         include/perturbrun.h
         src/perturbrun.cpp
+        src/angles.cpp
+        include/angles.h
 )
 
 add_executable(single_perturb
