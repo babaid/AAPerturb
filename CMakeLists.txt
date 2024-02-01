@@ -44,6 +44,8 @@ add_executable(aaperturb
 
 add_executable(single_perturb
         src/single_perturb.cpp
+        src/angles.cpp
+        include/angles.h
         include/geometry.h
         include/constants.h
         src/geometry.cpp
@@ -60,6 +62,8 @@ add_executable(single_perturb
 add_executable(find_interfaces
         src/find_interfaces.cpp
         include/geometry.h
+        src/angles.cpp
+        include/angles.h
         include/constants.h
         src/geometry.cpp
         include/io.h
