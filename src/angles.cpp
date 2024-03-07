@@ -2,13 +2,15 @@
 #include <random>
 #include <vector>
 #include "angles.h"
+//https://dunbrack.fccc.edu/bbdep2010/ConformationalAnalysis.php
 double chi1() {
+
     // Seed the Mersenne Twister engine
     static std::random_device rd;
     static std::mt19937 mt(rd());
 
     // Define parameters for the normal distributions
-    const std::vector<double> means = {60.0, 180.0, 300.0};
+    const std::vector<double> means = {120.0, 240.0, 360.0};
     const double stddev = 2.0;
     const std::vector<double> weights = {1/3, 1/3, 1/3};
 
@@ -28,7 +30,6 @@ double chi1() {
             return dists[i](mt);
         }
     }
-
     // This line should not be reached under normal circumstances
     return dists.back()(mt);
 }

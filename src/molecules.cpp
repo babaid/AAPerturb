@@ -173,35 +173,6 @@ double calculateDistance(const Atom& atom1, const Atom& atom2) {
     return std::sqrt(sum(pow(atom2.coords - atom1.coords, 2)));
 }
 
-
-/*
-void RandomPerturbator::calculateDistanceMatrix() {
-    dist_mat =  std::vector<std::vector<double>>(protein.numAtoms, std::vector<double>(protein.numAtoms, 0.0));
-    int currentIndex = 0;
-    // Iterate through the chainmap structure
-    for (const auto& chainEntry1 : protein.chains) {
-        for (auto const& residue1 : chainEntry1.second) {
-            for (const Atom& atom1 : residue1.atoms) {
-                int otherIndex = 0;
-                for (const auto& chainEntry2 : protein.chains) {
-                    for (auto const&  residue2 : chainEntry2.second) {
-                        for (const Atom& atom2 : residue2.atoms) {
-                            double distance = calculateDistance(atom1, atom2);
-                            dist_mat[currentIndex][otherIndex] = distance;
-                            if (currentIndex == otherIndex) {
-                                dist_mat.at(currentIndex).at(otherIndex) = std::numeric_limits<double>::max();
-                            }
-                            otherIndex++;
-                        }
-                    }
-                }
-                currentIndex++;
-            }
-        }
-    }
-}
-*/
-
 std::vector<std::vector<double>> RandomPerturbator::calculateLocalDistanceMatrix(Residue &refres) {
 
     std::vector<std::vector<double>> distanceMatrix =  std::vector<std::vector<double>>(protein.numAtoms, std::vector<double>(refres.atoms.size(), 0.0));
@@ -228,23 +199,6 @@ std::vector<std::vector<double>> RandomPerturbator::calculateLocalDistanceMatrix
     }
     return distanceMatrix;
 }
-
-
-/*
-void PDBStructure::updateDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum){
-    auto atompos = chains.at(chain).at(resNum).atoms.at(0).serial-1;
-    for(std::size_t i{0}; i<numAtoms; i++)
-    {
-        for(int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
-            dist_mat.at(i).at(j) = newPart.at(i).at(j-atompos);
-            dist_mat.at(j).at(i) = newPart.at(i).at(j-atompos); // Symmetry. Maybe not optimal. IDK
-        }
-    }
-}
-*/
-
-
-
 
 void RandomPerturbator::getNumberOfResiduesPerChain() {
     std::cout << "Residue counts in each chain: " << std::endl;
@@ -488,54 +442,6 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
         }
     }
 }
-
-/*
-void RandomPerturbator::saveCoords(const fs::path& outputPath) {
-
-    auto outputFilename = outputPath/"coords.tsv";
-    std::ofstream coordinateFile(outputFilename);
-    //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
-    if (!coordinateFile.is_open()) {
-        std::cerr << "Error: Unable to open file " << outputFilename << std::endl;
-        return;
-    }
-    for (const auto& chainEntry : protein.chains) {
-        for (auto &residue: chainEntry.second) {
-            for (const Atom &atom: residue.atoms) {
-                for(auto const& coord: atom.coords)
-                {
-                    coordinateFile << coord << "\t";
-                }
-                coordinateFile << std::endl;
-            }
-        }
-
-
-    }
-}
-
-
-void RandomPerturbator::saveDistMat(const fs::path& outputFile) {
-    saveMatrixAsTSV(dist_mat, outputFile);
-}
-
-void RandomPerturbator::saveLocalDistMat(const fs::path& outputFile, char chain, int resNum) {
-    auto local_dist_mat = this->calculateLocalDistanceMatrix(protein.chains.at(chain).at(resNum));
-    saveMatrixAsTSV(local_dist_mat, outputFile);
-}
-
-void RandomPerturbator::setDistanceMatrixLocally(std::vector<std::vector<double>> &newPart, char chain,
-                                                 unsigned int resNum) {
-    long unsigned int atompos = protein.chains.at(chain).at(resNum).atoms.at(0).serial-1;
-    for(std::size_t i{0}; i<protein.numAtoms; i++)
-    {
-        for(long unsigned int j{atompos}; j<atompos+newPart.at(0).size(); ++j){
-            dist_mat.at(i).at(j) = newPart.at(i).at(j-atompos);
-            dist_mat.at(j).at(i) = newPart.at(i).at(j-atompos); // Symmetry. Maybe not optimal. IDK
-        }
-    }
-}
-*/
 
 double RandomPerturbator::calculateRMSD(const Residue &ref_res) {
     if (ref_res.atoms.size() != protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms.size()) {
