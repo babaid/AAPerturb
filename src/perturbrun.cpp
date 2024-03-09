@@ -26,8 +26,8 @@ namespace fs = std::filesystem;
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
 void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, const bool verbose, double BBangle, double SCHangle) {
-    std::size_t  cyclecntr{0};
-    std::size_t perturbcntr{number_of_files_in_directory(out)};
+    std::size_t  cyclecntr{0}, perturbcntr{0};
+    //std::size_t perturbcntr{number_of_files_in_directory(out)};
 
     if (perturbcntr<num_perturbations) {
 
