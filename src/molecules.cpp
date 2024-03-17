@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "angles.h"
 
+#include "spdlog/spdlog.h"
 
 #include<iostream>
 #include<algorithm>
@@ -11,6 +12,7 @@
 #include<filesystem>
 #include<exception>
 #include<random>
+#include<set>
 
 namespace fs=std::filesystem;
 
@@ -199,10 +201,10 @@ std::vector<std::vector<double>> RandomPerturbator::calculateLocalDistanceMatrix
 }
 
 void RandomPerturbator::getNumberOfResiduesPerChain() {
-    std::cout << "Residue counts in each chain: " << std::endl;
-    auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
+
+    spdlog::info("Residue counts in each chain: ");
+    auto print_chain_n = [](auto const& elem){spdlog::info(std::format("{} : {}", elem.first ,elem.second.size()));};
     std::for_each(protein.chains.begin(), protein.chains.end(), print_chain_n);
-    std::cout << std::endl;
 }
 
 void RandomPerturbator::findInterfaceResidues(double cutoff) {
@@ -236,12 +238,6 @@ void RandomPerturbator::findInterfaceResidues(double cutoff) {
 void RandomPerturbator::saveInterfaceResidues(fs::path& outputFilename)
 {
     std::ofstream file(outputFilename);
-    //std::ofstream pdbFile(outputFilename, std::ios::out | std::ios::binary);
-    if (!file.is_open()) {
-        std::cerr << "Error: Unable to open file " << outputFilename << std::endl;
-        return;
-    }
-
     if (file.is_open()) {
         file << "{\n";
         auto it = interfaceResidues.begin();
@@ -265,21 +261,27 @@ void RandomPerturbator::saveInterfaceResidues(fs::path& outputFilename)
         }
         file << "}\n";
         file.close();
-        if (verbose) std::cout << "Map saved to " << outputFilename << std::endl;
-    } else {
-        std::cerr << "Unable to open file!" << std::endl;
+        spdlog::info(std::format("Map saved to {}", outputFilename.string()));
     }
+    else
+    {
+        spdlog::error(std::format("Unable to open file {}", outputFilename.string()));
+        return;
+    }
+
 }
+
 void RandomPerturbator::printInterfaceResidues() {
-    std::cout << "Found following number of interface residues in the chains: ";
-    auto print_chain_n = [](auto const& elem){std::cout << elem.first << ": " << elem.second.size() << ", ";};
-    std::for_each(interfaceResidues.begin(), interfaceResidues.end(), print_chain_n);
-    std::cout<< std::endl;
+        spdlog::info("Found following number of interface residues in the chains: ");
+        auto print_chain_n = [](auto const &elem) { spdlog::info(std::format("{} : {}", elem.first, elem.second.size()));};
+        std::for_each(interfaceResidues.begin(), interfaceResidues.end(), print_chain_n);
 }
+
 std::map<char, std::vector<unsigned>> RandomPerturbator::getInterfaceResidues()
 {
     return interfaceResidues;
 }
+
 Residue RandomPerturbator::getResidue(char chain, unsigned int resSeq) {
 
     if((protein.chains.find(chain) != protein.chains.end())) {
@@ -293,11 +295,7 @@ Residue RandomPerturbator::getResidue(char chain, unsigned int resSeq) {
 void RandomPerturbator::setResidue(const Residue & res) {
     protein.chains.at(res.chainID).at(res.resSeq) = std::move(res);
 }
-/*
-std::vector<std::vector<double>> RandomPerturbator::getDistMat() {
-    return dist_mat;
-}
-*/
+
 
 std::pair<char, std::size_t> RandomPerturbator::chooseRandomResidue() const {
     thread_local std::random_device thread_dev;
@@ -331,7 +329,7 @@ std::pair<char, std::size_t> RandomPerturbator::chooseRandomResidue() const {
 
 
 
-RandomPerturbator::RandomPerturbator(fs::path& pdb_path, bool verbose): verbose(verbose), protein(Protein(pdb_path)){
+RandomPerturbator::RandomPerturbator(fs::path& pdb_path): protein(Protein(pdb_path)){
 
 }
 
@@ -372,10 +370,9 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
 }
 void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t resNum) {
     //this function now also does not check for clashes.
-    if (verbose) {
-        std::cout << std::endl << "Size of chain: " << protein.chains.at(chain).size() << std::endl
-                  << "Trying to perturb..." << std::endl;
-    }
+
+    spdlog::info(std::format("Size of chain: {}. Trying to perturb...", protein.chains.at(chain).size()));
+
 
     thread_local std::random_device thread_dev;
     thread_local std::mt19937 thread_rng(thread_dev());
@@ -393,17 +390,17 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
     std::string resName = protein.chains.at(chain).at(resNum).resName;
 
     if (resName != "GLY" && resName != "PRO" && resName != "ALA" &&
-        amino_acids::axes::AMINO_MAP.find(resName) != amino_acids::axes::AMINO_MAP.end()) {
-        for (const std::string &axis: amino_acids::axes::AMINO_MAP.at(resName)) {
+        constants::axes::AMINO_MAP.find(resName) != constants::axes::AMINO_MAP.end()) {
+        for (const std::string &axis: constants::axes::AMINO_MAP.at(resName)) {
             {
                 //find names of atoms to rotate
-                auto it_substructure = std::find(amino_acids::atoms::AMINO_MAP.at(resName).begin(),
-                                                 amino_acids::atoms::AMINO_MAP.at(resName).end(), axis);
-                std::size_t index = std::distance(amino_acids::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
+                auto it_substructure = std::find(constants::atoms::AMINO_MAP.at(resName).begin(),
+                                                 constants::atoms::AMINO_MAP.at(resName).end(), axis);
+                std::size_t index = std::distance(constants::atoms::AMINO_MAP.at(resName).begin(), it_substructure);
 
                 //iterator of atoms we will rotate
-                auto first = amino_acids::atoms::AMINO_MAP.at(resName).begin() + index + 1;
-                std::vector<std::string> sub_atoms = std::vector<std::string>(first, amino_acids::atoms::AMINO_MAP.at(
+                auto first = constants::atoms::AMINO_MAP.at(resName).begin() + index + 1;
+                std::vector<std::string> sub_atoms = std::vector<std::string>(first, constants::atoms::AMINO_MAP.at(
                         resName).end());
 
                 //now we create an actual rotation axis for the atoms
@@ -417,14 +414,15 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
                     angle =chi1();
                 }
                 else {
-                    auto it_substructure_lp = std::find(amino_acids::axes::AMINO_MAP.at(resName).begin(),
-                                                        amino_acids::axes::AMINO_MAP.at(resName).end(), axis);
+                    auto it_substructure_lp = std::find(constants::axes::AMINO_MAP.at(resName).begin(),
+                                                        constants::axes::AMINO_MAP.at(resName).end(), axis);
                     --it_substructure_lp;
                     secondary_pivot = *it_substructure_lp;
                     angle = dist(thread_rng); // chose all the other ones randomly
                 }
 
-                if (verbose) std::cout << "I have rotated the atoms around the " << secondary_pivot << "---" << axis << " " <<  " axis." << std::endl;
+                spdlog::info(std::format("Rotated the atoms around the {}---{} axis.", secondary_pivot, axis));
+
                 //get the coordinates of the two atoms on the axis
                 auto a = findRotationAxis(protein.chains.at(chain).at(resNum), axis);
                 auto b = findRotationAxis(protein.chains.at(chain).at(resNum), secondary_pivot);
@@ -443,7 +441,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
 
 double RandomPerturbator::calculateRMSD(const Residue &ref_res) {
     if (ref_res.atoms.size() != protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms.size()) {
-        std::cerr << "Error: Sets of atomic coordinates must have the same size." << std::endl;
+        spdlog::error("Sets of atomix coordinates must have the same size.");
         return -1.0; // Return an error value
     }
     double sumSquaredDifferences = 0.0;

@@ -3,6 +3,7 @@
 #include "fancy.h"
 #include "threadpool.h"
 
+#include "spdlog/spdlog.h"
 #include<argparse/argparse.hpp>
 
 #include<string>
@@ -16,20 +17,11 @@
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;
-bool verbose=false;
-//bool force = false;
-
-void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool);
-void perturbRun(fs::path, fs::path, unsigned int, const bool);
 
 
 int main(int argc, char *argv[]) {
 
-    argparse::ArgumentParser program("aaperturb", "1.2.0");
-    program.add_argument("-v", "--verbose")
-            .help("Enable verbose mode. It is useful if you want to know if something is happening.")
-            .default_value(false)
-            .implicit_value(true);
+    argparse::ArgumentParser program("find_interfaces", "1.2.0");
     program.add_argument("-i", "--input-dir")
             .required()
             .help("The directory containing the input PDB files which we want to perturb randomly.");
@@ -45,11 +37,6 @@ int main(int argc, char *argv[]) {
         std::cerr << err.what() << std::endl;
         std::cerr << program;
         std::exit(1);
-    }
-    if(program["-v"] == true)
-    {
-        std::cout << "Running in verbose mode." << std::endl;
-        verbose = true;
     }
     fs::path input_dir, output_dir;
     if (auto ifn = program.present("-i"))
@@ -90,16 +77,17 @@ int main(int argc, char *argv[]) {
         }
 
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
-                RandomPerturbator(file, verbose));
+                RandomPerturbator(file));
 
         if (verbose) {
             pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
         }
-        if (verbose) std::cout << "Looking for interface residues." << std::endl;
+        spdlog::info("Looking for interface residues.");
 
         pert->findInterfaceResidues(12.0);
 
-        if (verbose) std::cout << "Saving interface residues" << std::endl;
+        spdlog::info("Saving interface residues.");
+
         std::string iface =  "_interfaces.json";
         std::string fname = file.stem();
         std::string fout = fname+iface;
@@ -109,7 +97,7 @@ int main(int argc, char *argv[]) {
             pert->getInterfaceResidues();
         }
     }
-    std::cout << "Dataset generation finished" << std::endl;
+    spdlog::info("Interface lookup finished.");
     return 0;
 }
 

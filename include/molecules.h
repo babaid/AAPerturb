@@ -60,7 +60,7 @@ class RandomPerturbator
 
 
 public:
-    RandomPerturbator(fs::path&, bool);
+    RandomPerturbator(fs::path&);
 
     //void calculateDistanceMatrix(); //Calculates distance matrix of one protein
     std::vector<std::vector<double>> calculateLocalDistanceMatrix(Residue& refres); //you can use any reference residue. This is extremely useful
