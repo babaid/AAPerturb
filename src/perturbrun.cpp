@@ -4,7 +4,7 @@
 #include "threadpool.h"
 #include "perturbrun.h"
 #include "spdlog/spdlog.h"
-
+#include "spdlog/sinks/stdout_sinks.h"
 #include<string>
 #include<filesystem>
 #include<array>
@@ -17,6 +17,7 @@
 
 
 
+
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;
 
@@ -24,11 +25,12 @@ namespace fs = std::filesystem;
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
 void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, double BBangle, double SCHangle) {
+    auto console = spdlog::get("console");
     std::size_t  cyclecntr{0}, perturbcntr{0};
 
     if (perturbcntr<num_perturbations) {
 
-        spdlog::info(std::format("Opening {} for perturbation procedure.", input_filename.filename().string()));
+        console->info(std::format("Opening {} for perturbation procedure.", input_filename.filename().string()));
 
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(RandomPerturbator(input_filename));
 
@@ -39,9 +41,9 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
         pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
 
 
-        spdlog::info("Looking for interface residues.");
+        console->info("Looking for interface residues.");
         pert->findInterfaceResidues(12.0);
-        spdlog::info("Saving interface residues");
+        console->info("Saving interface residues");
         fs::path json_file{out /"interfaces.json"};
         pert->saveInterfaceResidues(json_file);
         //make thi s a log message
@@ -60,14 +62,14 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                     fs::path out_path = out / fname;
 
 
-                    spdlog::info(std::format("Perturbing residue {}/{}", entry.second.size(), perturbcntr));
-                    spdlog::info(std::format("{} : {}", chain, resid));
+                    console->info(std::format("Perturbing residue {}/{}", entry.second.size(), perturbcntr));
+                    console->info(std::format("{} : {}", chain, resid));
 
 
                     Residue ref_residue = pert->getResidue(chain, resid);
 
 
-                    spdlog::info("Started perturbation calculations.");
+                    console->info("Started perturbation calculations.");
 
 
                     std::vector<std::string> comments;
@@ -80,12 +82,12 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                         rmsd = pert->calculateRMSD(ref_residue);
                     }
                     catch (...) {
-                        spdlog::critical(std::format("Something was not right at {}. Skipping.", input_filename.string()));
+                        console->critical(std::format("Something was not right at {}. Skipping.", input_filename.string()));
                         continue;
                     }
 
 
-                    spdlog::info(std::format("Perturbation done. Per-Resiude RMSD: {}", rmsd));
+                    console->info(std::format("Perturbation done. Per-Resiude RMSD: {}", rmsd));
 
                     if (rmsd == 0.0) {
                         perturbcntr--;
@@ -108,7 +110,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
 
 
-                    spdlog::info(std::format("Saving new PDB file to: {}", out_path.string()));
+                    console->info(std::format("Saving new PDB file to: {}", out_path.string()));
 
 
 
@@ -123,7 +125,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 }
 
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, double BBangle, double SCHangle) {
-
+    auto console = spdlog::get("console");
     //Batched threadpool. We wait calmly for each thread to finish, when they finished, we empty the queue of tasks, and start the next iteration.
     // I strictly want to enqueue just as many tasks as the batch size allows, avoiding any type of overflows
     ThreadPool pool(batch_size); // Thread pool UwU
@@ -139,7 +141,7 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
         std::string msg = std::to_string(static_cast<int>( batch_start / batch_size + 1 )) + '/' +
                           std::to_string((int) (files.size() / batch_size));
         Pbar.print(msg);
-        spdlog::info(std::format("Working on batch {}/{}.", static_cast<int>(batch_start / batch_size + 1 ), (int) (files.size() / batch_size)));
+        console->info(std::format("Working on batch {}/{}.", static_cast<int>(batch_start / batch_size + 1 ), (int) (files.size() / batch_size)));
         ////
 
         unsigned int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));

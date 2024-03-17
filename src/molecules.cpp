@@ -4,6 +4,7 @@
 #include "angles.h"
 
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_sinks.h"
 
 #include<iostream>
 #include<algorithm>
@@ -202,8 +203,8 @@ std::vector<std::vector<double>> RandomPerturbator::calculateLocalDistanceMatrix
 
 void RandomPerturbator::getNumberOfResiduesPerChain() {
 
-    spdlog::info("Residue counts in each chain: ");
-    auto print_chain_n = [](auto const& elem){spdlog::info(std::format("{} : {}", elem.first ,elem.second.size()));};
+    logger->info("Residue counts in each chain: ");
+    auto print_chain_n = [this](auto const& elem){logger->info(std::format("{} : {}", elem.first ,elem.second.size()));};
     std::for_each(protein.chains.begin(), protein.chains.end(), print_chain_n);
 }
 
@@ -261,19 +262,19 @@ void RandomPerturbator::saveInterfaceResidues(fs::path& outputFilename)
         }
         file << "}\n";
         file.close();
-        spdlog::info(std::format("Map saved to {}", outputFilename.string()));
+        logger->info(std::format("Map saved to {}", outputFilename.string()));
     }
     else
     {
-        spdlog::error(std::format("Unable to open file {}", outputFilename.string()));
+        logger->error(std::format("Unable to open file {}", outputFilename.string()));
         return;
     }
 
 }
 
 void RandomPerturbator::printInterfaceResidues() {
-        spdlog::info("Found following number of interface residues in the chains: ");
-        auto print_chain_n = [](auto const &elem) { spdlog::info(std::format("{} : {}", elem.first, elem.second.size()));};
+        logger->info("Found following number of interface residues in the chains: ");
+        auto print_chain_n = [this](auto const &elem) { logger->info(std::format("{} : {}", elem.first, elem.second.size()));};
         std::for_each(interfaceResidues.begin(), interfaceResidues.end(), print_chain_n);
 }
 
@@ -331,6 +332,7 @@ std::pair<char, std::size_t> RandomPerturbator::chooseRandomResidue() const {
 
 RandomPerturbator::RandomPerturbator(fs::path& pdb_path): protein(Protein(pdb_path)){
 
+    logger = spdlog::stderr_logger_mt("perturbatorlogger");
 }
 
 
@@ -371,7 +373,7 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
 void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t resNum) {
     //this function now also does not check for clashes.
 
-    spdlog::info(std::format("Size of chain: {}. Trying to perturb...", protein.chains.at(chain).size()));
+    logger->info(std::format("Size of chain: {}. Trying to perturb...", protein.chains.at(chain).size()));
 
 
     thread_local std::random_device thread_dev;
@@ -421,7 +423,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
                     angle = dist(thread_rng); // chose all the other ones randomly
                 }
 
-                spdlog::info(std::format("Rotated the atoms around the {}---{} axis.", secondary_pivot, axis));
+                logger->info(std::format("Rotated the atoms around the {}---{} axis.", secondary_pivot, axis));
 
                 //get the coordinates of the two atoms on the axis
                 auto a = findRotationAxis(protein.chains.at(chain).at(resNum), axis);
@@ -441,7 +443,7 @@ void RandomPerturbator::rotateResidueSidechainRandomly(char chain, std::size_t r
 
 double RandomPerturbator::calculateRMSD(const Residue &ref_res) {
     if (ref_res.atoms.size() != protein.chains.at(ref_res.chainID).at(ref_res.resSeq).atoms.size()) {
-        spdlog::error("Sets of atomix coordinates must have the same size.");
+        logger->error("Sets of atomix coordinates must have the same size.");
         return -1.0; // Return an error value
     }
     double sumSquaredDifferences = 0.0;

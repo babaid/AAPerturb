@@ -3,14 +3,14 @@
 //
 #include "perturbrun.h"
 #include "spdlog/spdlog.h"
-
+#include "spdlog/sinks/stdout_sinks.h"
 #include<argparse/argparse.hpp>
 
 #include<iostream>
 #include<filesystem>
 #include<iterator>
 #include<cmath>
-
+#include<iostream>
 
 
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
@@ -19,6 +19,8 @@ namespace fs = std::filesystem;
 
 
 int main(int argc, char *argv[]) {
+
+
 
     argparse::ArgumentParser program("aaperturb", "2.0.0");
     program.add_argument("-i", "--input-dir")
@@ -35,13 +37,15 @@ int main(int argc, char *argv[]) {
             .scan<'d', std::size_t>()
             .default_value(std::size_t(1))
             .help("The number of variations of a single protein.");
-
-    program.add_argument("-q", "--max-bbangle")
+    program.add_argument("--verbose")
+             .default_value(false)
+             .implicit_value(true)
+             .help("Set if there should be logs shown.");
+    program.add_argument("--max-bbangle")
             .scan<'g', double>()
             .default_value(double(0.5))
             .help("The maximal backbone rotation angle.");
-
-    program.add_argument("-w", "--max-schangle")
+    program.add_argument("--max-schangle")
             .scan<'g', double>()
             .default_value(double(0.5))
             .help("The maximal sidechain rotation angle.");
@@ -77,10 +81,24 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    auto console = spdlog::stderr_logger_mt("console");
+    auto pertlogger = spdlog::stderr_logger_mt("perturbatorlogger");
+
+    if (program["--verbose"] == true) {
+        console->set_level(spdlog::level::trace);
+        pertlogger->set_level(spdlog::level::trace);
+    }
+    else {
+        console->set_level(spdlog::level::off);
+        pertlogger->set_level(spdlog::level::off);
+    }
+
+
+
     std::size_t num_variations = program.get<std::size_t >("-N");
     std::size_t batch_size = program.get<std::size_t>("-b");
-    double BBangle = program.get<double>("-q");
-    double SCHangle = program.get<double>("-w");
+    double BBangle = program.get<double>("--max-bbangle");
+    double SCHangle = program.get<double>("--max-schangle");
 
     spdlog::info(std::format("Maximal BackBone angle set to {}. Maximal SideCHain angle set to {}.", BBangle, SCHangle));
     spdlog::info("Starting dataset generation.");
@@ -88,7 +106,7 @@ int main(int argc, char *argv[]) {
     createdataset(input_dir, output_dir, num_variations, batch_size, BBangle, SCHangle);
 
 
-    spdlog::info("Dataset generation finished.");
+    console->info("Dataset generation finished.");
     return 0;
 }
 

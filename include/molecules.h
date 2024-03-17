@@ -1,6 +1,7 @@
 //Header for molecule data structures
 #ifndef AAPERTURB_MOLECULES_H
 #define AAPERTURB_MOLECULES_H
+#include "spdlog/spdlog.h"
 #include<vector>
 #include<string>
 #include<array>
@@ -53,7 +54,7 @@ struct Protein
  */
 class RandomPerturbator
 {
-    bool verbose;
+    std::shared_ptr<spdlog::logger> logger;
     Protein protein;
     std::map<char, std::vector<unsigned>> interfaceResidues;
     double maxRotAngleBB, maxRotAngleSCH;
