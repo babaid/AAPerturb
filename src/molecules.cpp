@@ -1,6 +1,9 @@
-//
-// Created by babaid on 09.09.23.
-//
+#include "molecules.h"
+#include "geometry.h"
+#include "constants.h"
+#include "angles.h"
+
+
 #include<iostream>
 #include<algorithm>
 #include<string>
@@ -8,11 +11,6 @@
 #include<filesystem>
 #include<exception>
 #include<random>
-#include<set>
-#include "molecules.h"
-#include "geometry.h"
-#include "constants.h"
-#include "angles.h"
 
 namespace fs=std::filesystem;
 

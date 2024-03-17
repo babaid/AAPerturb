@@ -1,14 +1,17 @@
 //Main executable...
 // Created by babaid on 07.09.23.
 //
+#include "perturbrun.h"
+
+
+#include<argparse/argparse.hpp>
 
 #include<iostream>
 #include<filesystem>
 #include<iterator>
-#include<thread>
 #include<cmath>
-#include<argparse/argparse.hpp>
-#include "perturbrun.h"
+
+
 
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
 using namespace std::chrono_literals;

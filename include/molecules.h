@@ -1,7 +1,4 @@
 //Header for molecule data structures
-// Created by babaid on 09.09.23.
-//
-
 #ifndef AAPERTURB_MOLECULES_H
 #define AAPERTURB_MOLECULES_H
 #include<vector>
@@ -9,6 +6,7 @@
 #include<array>
 #include<map>
 #include<filesystem>
+
 namespace fs = std::filesystem;
 using Vector3 = std::array<double, 3>;
 
@@ -60,7 +58,6 @@ class RandomPerturbator
     std::map<char, std::vector<unsigned>> interfaceResidues;
     double maxRotAngleBB, maxRotAngleSCH;
 
-    //std::vector<std::vector<double>> dist_mat;
 
 public:
     RandomPerturbator(fs::path&, bool);
@@ -75,16 +72,10 @@ public:
     [[nodiscard]] std::pair<char , std::size_t> chooseRandomResidue() const;
 
 
-
     //this is where the magic is happening
     void rotateResidueSidechainRandomly(char, std::size_t );
     void rotateResidueAroundBackboneRandomly(char, std::size_t);
 
-
-    //savers
-    //void saveCoords(const fs::path&);
-    //void saveDistMat(const fs::path&);
-    //void saveLocalDistMat(const fs::path&, char, int);
     void saveToPDB(fs::path&, const std::vector<std::string>&);
 
     //getters

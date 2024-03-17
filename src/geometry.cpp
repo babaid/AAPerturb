@@ -1,10 +1,11 @@
+#include "geometry.h"
+#include "molecules.h"
+
+
 #include<cmath>
 #include<string>
 #include<iostream>
-#include<valarray>
 #include<array>
-#include "geometry.h"
-#include "molecules.h"
 
 
 using Vector3 = std::array<double, 3>;
@@ -159,6 +160,7 @@ double sum(const Vector3& v)
     return out;
 }
 
+//maybe useful later.
 Vector3 crossProduct(const Vector3& vector1, const Vector3& vector2) {
     if (vector1.size() != 3 || vector2.size() != 3) {
         std::cerr << "Error: Input vectors must have size 3." << std::endl;

@@ -1,3 +1,10 @@
+#include "molecules.h"
+#include "IOutils.h"
+#include "fancy.h"
+#include "threadpool.h"
+#include "perturbrun.h"
+
+
 #include<string>
 #include<iostream>
 #include<filesystem>
@@ -7,27 +14,18 @@
 #include<thread>
 #include<format>
 #include<limits>
-#include<argparse/argparse.hpp>
-#include "molecules.h"
-#include "io.h"
-#include "fancy.h"
-#include "threadpool.h"
-#include "perturbrun.h"
+
+
 
 
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;
-
-
-
-
 
 /*
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
 void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, const bool verbose, double BBangle, double SCHangle) {
     std::size_t  cyclecntr{0}, perturbcntr{0};
-    //std::size_t perturbcntr{number_of_files_in_directory(out)};
 
     if (perturbcntr<num_perturbations) {
 
@@ -40,11 +38,6 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
         pert->setMaxRotAngleBB(BBangle);
         pert->setMaxRotAngleSCH(SCHangle);
-
-        //auto path = out / "extracted";
-
-        //if (!fs::is_directory(path)) fs::create_directory(path);
-        //if (!fs::exists(path / "coords.tsv")) pert->saveCoords(path);
 
         if (verbose) {
             pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
@@ -70,7 +63,6 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 
                     if (verbose) std::cout << "Choosing a random residue to perturb: ";
 
-                    //std::pair<char, std::size_t> res = pert->chooseRandomResidue();
 
                     if (verbose) std::cout << chain << " : " << resid << std::endl;
                     Residue ref_residue = pert->getResidue(chain, resid);
@@ -78,7 +70,6 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                     std::vector<std::string> comments;
                     if (verbose) std::cout << "Perturbing the chosen residue";
 
-                    //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
                     double rmsd = std::numeric_limits<double>::infinity();
                     try {
                         pert->rotateResidueSidechainRandomly(chain, resid);
@@ -108,10 +99,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
                     comments.push_back(comment3);
 
                     if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
-                    //auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
-                    // save update stuff.
-                    //pert->saveLocalDistMat(out / distmat_fname, res.first,
-                    //   res.second); //This either will make things fast or slow
+
                     pert->saveToPDB(out_path, comments); //usual
                     pert->setResidue(ref_residue); //hm.
 

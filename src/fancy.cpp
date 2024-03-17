@@ -1,11 +1,8 @@
-//
-// Created by babaid on 14.09.23.
-//
-//
-//
+#include "fancy.h"
+
 #include<iostream>
 #include<string>
-#include "fancy.h"
+
 
 // https://github.com/GregoryConrad/pBar/tree/master
 

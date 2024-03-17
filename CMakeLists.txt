@@ -29,8 +29,8 @@ add_executable(aaperturb
         include/constants.h
         src/geometry.cpp
         src/main.cpp
-        include/io.h
-        src/io.cpp
+        include/IOutils.h
+        src/IOutils.cpp
         include/molecules.h
         src/molecules.cpp
         include/fancy.h
@@ -43,14 +43,13 @@ add_executable(aaperturb
 )
 
 add_executable(single_perturb
-        src/single_perturb.cpp
         src/angles.cpp
         include/angles.h
         include/geometry.h
         include/constants.h
         src/geometry.cpp
-        include/io.h
-        src/io.cpp
+        include/IOutils.h
+        src/IOutils.cpp
         include/molecules.h
         src/molecules.cpp
         include/fancy.h
@@ -66,8 +65,8 @@ add_executable(find_interfaces
         include/angles.h
         include/constants.h
         src/geometry.cpp
-        include/io.h
-        src/io.cpp
+        include/IOutils.h
+        src/IOutils.cpp
         include/molecules.h
         src/molecules.cpp
         src/fancy.cpp

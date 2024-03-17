@@ -1,20 +1,17 @@
+#include "molecules.h"
+#include "IOutils.h"
+#include "fancy.h"
+#include "threadpool.h"
+
+#include<argparse/argparse.hpp>
+
 #include<string>
 #include<iostream>
 #include<filesystem>
-#include<array>
 #include<vector>
 #include<iterator>
-#include<algorithm>
-#include<thread>
-#include<format>
-#include<limits>
 #include<cmath>
-#include<chrono>
-#include<argparse/argparse.hpp>
-#include "molecules.h"
-#include "io.h"
-#include "fancy.h"
-#include "threadpool.h"
+
 
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
 using namespace std::chrono_literals;

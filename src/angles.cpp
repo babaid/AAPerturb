@@ -1,7 +1,10 @@
+#include "angles.h"
+
+
 #include <iostream>
 #include <random>
 #include <vector>
-#include "angles.h"
+
 //https://dunbrack.fccc.edu/bbdep2010/ConformationalAnalysis.php
 double chi1() {
 
