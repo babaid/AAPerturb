@@ -25,7 +25,7 @@ namespace fs = std::filesystem;
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
 void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, double BBangle, double SCHangle) {
-    auto console = spdlog::get("main_logger");
+    auto console = spdlog::get("main");
     std::size_t  cyclecntr{0}, perturbcntr{0};
 
     if (perturbcntr<num_perturbations) {
@@ -125,7 +125,7 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
 }
 
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, double BBangle, double SCHangle) {
-    auto console = spdlog::get("console");
+    auto console = spdlog::get("main");
     //Batched threadpool. We wait calmly for each thread to finish, when they finished, we empty the queue of tasks, and start the next iteration.
     // I strictly want to enqueue just as many tasks as the batch size allows, avoiding any type of overflows
     ThreadPool pool(batch_size); // Thread pool UwU

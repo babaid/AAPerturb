@@ -81,16 +81,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    auto console = spdlog::stderr_logger_mt("main_logger");
-    auto pertlogger = spdlog::stderr_logger_mt("perturbator_logger");
+    auto console = spdlog::stderr_logger_mt("main");
 
     if (program["--verbose"] == true) {
         console->set_level(spdlog::level::trace);
-        pertlogger->set_level(spdlog::level::trace);
     }
     else {
         console->set_level(spdlog::level::off);
-        pertlogger->set_level(spdlog::level::off);
     }
 
 
@@ -104,10 +101,12 @@ int main(int argc, char *argv[]) {
     spdlog::info(std::format("Maximal BackBone angle set to {}. Maximal SideCHain angle set to {}.", BBangle, SCHangle));
     spdlog::info("Starting dataset generation.");
 
+
     createdataset(input_dir, output_dir, num_variations, batch_size, BBangle, SCHangle);
 
 
     console->info("Dataset generation finished.");
+
     return 0;
 }
 

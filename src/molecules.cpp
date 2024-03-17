@@ -332,7 +332,12 @@ std::pair<char, std::size_t> RandomPerturbator::chooseRandomResidue() const {
 
 RandomPerturbator::RandomPerturbator(fs::path& pdb_path): protein(Protein(pdb_path)){
 
-    logger = spdlog::stderr_logger_mt("perturbator_logger");
+    logger = spdlog::get("main");
+    if (!logger)
+    {
+        spdlog::stderr_logger_mt("main");
+    }
+
 }
 
 
@@ -359,7 +364,7 @@ void RandomPerturbator::rotateResidueAroundBackboneRandomly(char chain, std::siz
 
 
 
-    std::normal_distribution dist{0., maxRotAngleSCH};
+    std::normal_distribution dist{0., maxRotAngleBB};
     //std::uniform_real_distribution<double> dist(-maxRotAngleBB, maxRotAngleBB);
     Residue ref_res(protein.chains.at(chain).at(resNum));
     std::string resName = protein.chains.at(chain).at(resNum).resName;
