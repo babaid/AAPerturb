@@ -137,11 +137,14 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
 
         std::this_thread::sleep_for(0.1s);
         ///
-        Pbar.update();
-        std::string msg = std::to_string(static_cast<int>( batch_start / batch_size + 1 )) + '/' +
-                          std::to_string((int) (files.size() / batch_size));
-        Pbar.print(msg);
-        console->info(std::format("Working on batch {}/{}.", static_cast<int>(batch_start / batch_size + 1 ), (int) (files.size() / batch_size)));
+        if(console->level() == spdlog::level::off) {
+            Pbar.update();
+            std::string msg = std::to_string(static_cast<int>( batch_start / batch_size + 1 )) + '/' +
+                              std::to_string((int) (files.size() / batch_size));
+
+            Pbar.print(msg);
+        }
+        else console->info(std::format("Working on batch {}/{}.", static_cast<int>(batch_start / batch_size + 1 ), (int) (files.size() / batch_size)));
         ////
 
         unsigned int batch_end = std::min(batch_start + batch_size, static_cast<unsigned int>(files.size()));

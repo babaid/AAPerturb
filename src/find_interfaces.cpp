@@ -4,6 +4,7 @@
 #include "threadpool.h"
 
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_sinks.h"
 #include<argparse/argparse.hpp>
 
 #include<string>
@@ -20,7 +21,7 @@ namespace fs = std::filesystem;
 
 
 int main(int argc, char *argv[]) {
-
+    auto logger = spdlog::stdout_logger_mt("main");
     argparse::ArgumentParser program("find_interfaces", "1.2.0");
     program.add_argument("-i", "--input-dir")
             .required()
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
         input_dir = *ifn;
         if(!fs::is_directory(input_dir))
         {
-            std::cout << "The directory provided does not exist. Exiting..." << std::endl;
+            spdlog::error("The directory provided does not exist. Exiting...");
             std::exit(1);
         }
     }
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
         output_dir = *ofn;
         if(!fs::is_directory(output_dir))
         {
-            std::cout << "The directory provided does not exist. Creating directory " << output_dir << std::endl;
+            logger->info(std::format("The directory provided does not exist. Creating directory ", output_dir.string()));
             fs::create_directory(output_dir);
         }
     }
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
     unsigned i{0};
     for (auto& file:files)
     {
-        if (!verbose) {
+        if (logger->level() == spdlog::level::off) {
             i++;
             Pbar.update();
             std::string msg = std::to_string(static_cast<int>( i+1 )) + '/' +
@@ -72,32 +73,29 @@ int main(int argc, char *argv[]) {
             Pbar.print(msg);
         }
 
-        if (verbose){
-            std::cout << "Opening " << file<< " for perturbation." << std::endl;
-        }
+        logger->info(std::format("Opening {} for perturbation.", file.string()));
 
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
                 RandomPerturbator(file));
 
-        if (verbose) {
-            pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
-        }
-        spdlog::info("Looking for interface residues.");
+
+        pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
+
+        logger->info("Looking for interface residues.");
 
         pert->findInterfaceResidues(12.0);
 
-        spdlog::info("Saving interface residues.");
+        logger->info("Saving interface residues.");
 
         std::string iface =  "_interfaces.json";
         std::string fname = file.stem();
         std::string fout = fname+iface;
         fs::path json_file{output_dir/fout};
         pert->saveInterfaceResidues(json_file);
-        if (verbose) {
-            pert->getInterfaceResidues();
-        }
+        pert->getInterfaceResidues();
+
     }
-    spdlog::info("Interface lookup finished.");
+    logger->info("Interface lookup finished.");
     return 0;
 }
 
