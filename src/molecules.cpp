@@ -332,7 +332,7 @@ std::pair<char, std::size_t> RandomPerturbator::chooseRandomResidue() const {
 
 RandomPerturbator::RandomPerturbator(fs::path& pdb_path): protein(Protein(pdb_path)){
 
-    logger = spdlog::stderr_logger_mt("perturbatorlogger");
+    logger = spdlog::stderr_logger_mt("perturbator_logger");
 }
 
 

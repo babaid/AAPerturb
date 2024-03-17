@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    auto console = spdlog::stderr_logger_mt("console");
-    auto pertlogger = spdlog::stderr_logger_mt("perturbatorlogger");
+    auto console = spdlog::stderr_logger_mt("main_logger");
+    auto pertlogger = spdlog::stderr_logger_mt("perturbator_logger");
 
     if (program["--verbose"] == true) {
         console->set_level(spdlog::level::trace);
@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
 
     std::size_t num_variations = program.get<std::size_t >("-N");
     std::size_t batch_size = program.get<std::size_t>("-b");
+
     double BBangle = program.get<double>("--max-bbangle");
     double SCHangle = program.get<double>("--max-schangle");
 
