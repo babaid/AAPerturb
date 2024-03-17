@@ -26,7 +26,9 @@ namespace fs = std::filesystem;
  * Opens a PDB file and perturbes the interface amino acids in the protein a number of times.
  */
 void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_perturbations, const bool verbose, double BBangle, double SCHangle) {
-    std::size_t perturbcntr{number_of_files_in_directory(out)};
+    std::size_t  cyclecntr{0}, perturbcntr{0};
+    //std::size_t perturbcntr{number_of_files_in_directory(out)};
+
     if (perturbcntr<num_perturbations) {
 
         if (verbose){
@@ -55,70 +57,71 @@ void perturbRun(fs::path input_filename, fs::path out,const unsigned int num_per
         fs::path json_file{out /"interfaces.json"};
         pert->saveInterfaceResidues(json_file);
         if (verbose) {
-            pert->getInterfaceResidues();
+            pert->printInterfaceResidues();
         }
 
+        auto interface_residues = pert->getInterfaceResidues();
+        while (cyclecntr < num_perturbations) {
+            for (const auto &entry: interface_residues) {
+                char chain = entry.first;
+                for (unsigned resid: entry.second) {
+                    std::string fname = std::to_string(perturbcntr) + ".pdb";
+                    fs::path out_path = out / fname;
 
-        while (perturbcntr < num_perturbations) {
+                    if (verbose) std::cout << "Choosing a random residue to perturb: ";
 
-            std::string fname = std::to_string(perturbcntr) + ".pdb";
-            fs::path out_path = out / fname;
+                    //std::pair<char, std::size_t> res = pert->chooseRandomResidue();
 
-            if (verbose) std::cout << "Choosing a random residue to perturb: ";
+                    if (verbose) std::cout << chain << " : " << resid << std::endl;
+                    Residue ref_residue = pert->getResidue(chain, resid);
 
-            std::pair<char, std::size_t> res = pert->chooseRandomResidue();
+                    std::vector<std::string> comments;
+                    if (verbose) std::cout << "Perturbing the chosen residue";
 
-            if (verbose) std::cout << res.first << " : " << res.second << std::endl;
-            Residue ref_residue = pert->getResidue(res.first, res.second);
+                    //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
+                    double rmsd = std::numeric_limits<double>::infinity();
+                    try {
+                        pert->rotateResidueSidechainRandomly(chain, resid);
+                        pert->rotateResidueAroundBackboneRandomly(chain, resid);
+                        rmsd = pert->calculateRMSD(ref_residue);
+                    }
+                    catch (...) {
+                        if (verbose) std::cout << "Something was not right at " << input_filename << std::endl;
+                        continue;
+                    }
+                    if (verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
+                    if (rmsd == 0.0) {
+                        perturbcntr--;
+                        continue;
+                    } else {
+                        perturbcntr++;
+                    }
 
-            std::vector<std::string> comments;
-            if (verbose) std::cout << "Perturbing the chosen residue";
+                    std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", chain,
+                                                       std::to_string(resid + 1));
+                    std::string comment2 = std::format("DISTMAT CHANGE INDEX : {} ",
+                                                       std::to_string(ref_residue.atoms.at(0).serial));
+                    std::string comment3 = std::format("RMSD: {}", rmsd);
 
-            //Dont hate me but I get some random heap buffer overflow, so I will just deal with it later.
-            double rmsd = std::numeric_limits<double>::infinity();
-            try {
-                pert->rotateResidueSidechainRandomly(res.first, res.second);
-                pert->rotateResidueAroundBackboneRandomly(res.first, res.second);
-                rmsd = pert->calculateRMSD(ref_residue);
+                    comments.push_back(comment1);
+                    comments.push_back(comment2);
+                    comments.push_back(comment3);
+
+                    if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
+                    //auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
+                    // save update stuff.
+                    //pert->saveLocalDistMat(out / distmat_fname, res.first,
+                    //   res.second); //This either will make things fast or slow
+                    pert->saveToPDB(out_path, comments); //usual
+                    pert->setResidue(ref_residue); //hm.
+
+                }
             }
-            catch (...) {
-                if (verbose) std::cout << "Something was not right at " << input_filename << std::endl;
-                continue;
-            }
-            if (verbose) std::cout << "Perturbation ended, per-residue RMSD: " << rmsd << std::endl;
-            if (rmsd == 0.0) {
-                perturbcntr--;
-                continue;
-            } else {
-                perturbcntr++;
-            }
-
-            std::string comment1 = std::format("PERTURBATED RESIDUE: /{}:{}", res.first,
-                                               std::to_string(res.second + 1));
-            std::string comment2 = std::format("DISTMAT CHANGE INDEX : {} ",
-                                               std::to_string(ref_residue.atoms.at(0).serial));
-            std::string comment3 = std::format("RMSD: {}", rmsd);
-
-            comments.push_back(comment1);
-            comments.push_back(comment2);
-            comments.push_back(comment3);
-
-            if (verbose) std::cout << "Saving new PDB file at " << out_path << std::endl;
-            //auto distmat_fname = std::to_string(perturbcntr) + ".tsv";
-            // save update stuff.
-            //pert->saveLocalDistMat(out / distmat_fname, res.first,
-            //   res.second); //This either will make things fast or slow
-            pert->saveToPDB(out_path, comments); //usual
-            pert->setResidue(ref_residue); //hm.
-
-
-
+        cyclecntr++;
         }
-        pert.reset();
     }
 
 }
-
 
 void createdataset(const std::string inputdir, const std::string outputdir, const unsigned int num_variations_per_protein, const unsigned int batch_size, const bool verbose, double BBangle, double SCHangle) {
 
@@ -128,8 +131,6 @@ void createdataset(const std::string inputdir, const std::string outputdir, cons
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
     ProgressBar Pbar(files.size());
-
-
     if(!verbose){Pbar.print("0/0");}
     for (unsigned int batch_start{0}; batch_start < files.size();batch_start+=batch_size) {
         std::this_thread::sleep_for(0.5s);

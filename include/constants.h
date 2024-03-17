@@ -36,6 +36,7 @@ namespace amino_acids{
         };
     };
 
+    // chi_1 chi_2 chi_3 chi4
     namespace axes{
         const std::vector<std::string> ALA = {"CB"};
         const std::vector<std::string> ARG = {"CB", "CG", "CD", "NE", "CZ"};

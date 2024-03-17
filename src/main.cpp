@@ -50,10 +50,7 @@ int main(int argc, char *argv[]) {
             .scan<'g', double>()
             .default_value(double(0.5))
             .help("The maximal sidechain rotation angle.");
-    //program.add_argument("-f", "--force")
-    //        .help("Force recreation of already existent files in the output directory. Treat with care.")
-    //        .default_value(false)
-    //        .implicit_value(true);
+
 
     try {
         program.parse_args(argc, argv);
