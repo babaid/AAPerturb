@@ -60,7 +60,7 @@ class RandomPerturbator
     double maxRotAngleBB, maxRotAngleSCH;
 
 public:
-
+    explicit RandomPerturbator(fs::path&);
     explicit RandomPerturbator(fs::path&, double maxRotationBB, double maxRotationSCH);
 
     std::vector<std::vector<double>> calculateLocalDistanceMatrix(Residue& refres); //you can use any reference residue. This is extremely useful

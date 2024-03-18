@@ -172,6 +172,14 @@ double calculateDistance(const Atom& atom1, const Atom& atom2) {
     return std::sqrt(sum(pow(atom2.coords - atom1.coords, 2)));
 }
 
+RandomPerturbator::RandomPerturbator(fs::path& pdb_path):protein(Protein(pdb_path)), maxRotAngleBB(0.), maxRotAngleSCH(0.)
+{
+    logger = spdlog::get("main");
+    if (!logger)
+    {
+        spdlog::stderr_logger_mt("main");
+    }
+}
 
 RandomPerturbator::RandomPerturbator(fs::path& pdb_path,
                                      double maxRotationBB,
