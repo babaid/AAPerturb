@@ -13,8 +13,8 @@ using Vector3 = std::array<double, 3>;
 
 //An atom record from a PDB file
 struct Atom {
-    int serial;
-    int resSeq;
+    size_t serial;
+    size_t resSeq;
     char altLoc;
     char chainID;
     double occupancy;
@@ -31,7 +31,7 @@ double calculateDistance(const Atom& atom1, const Atom& atom2);
 //A whole residue of atoms in a PDB file
 struct Residue {
     char chainID;
-    int resSeq;
+    size_t resSeq;
     std::string resName;
     std::vector<Atom> atoms;
     std::vector<std::string> atom_seq;
@@ -43,7 +43,7 @@ struct Protein
 {
     std::vector<char> chain_ordering;
     std::map<char, std::vector<Residue>> chains;
-    unsigned int numAtoms{0};
+    size_t numAtoms{0};
     explicit Protein(fs::path&);
     void saveToPDB(fs::path&, const std::vector<std::string>&);
 
@@ -56,20 +56,19 @@ class RandomPerturbator
 {
     std::shared_ptr<spdlog::logger> logger;
     Protein protein;
-    std::map<char, std::vector<unsigned>> interfaceResidues;
+    std::map<char, std::vector<size_t>> interfaceResidues;
     double maxRotAngleBB, maxRotAngleSCH;
 
-
 public:
-    RandomPerturbator(fs::path&);
 
-    //void calculateDistanceMatrix(); //Calculates distance matrix of one protein
+    explicit RandomPerturbator(fs::path&, double maxRotationBB, double maxRotationSCH);
+
     std::vector<std::vector<double>> calculateLocalDistanceMatrix(Residue& refres); //you can use any reference residue. This is extremely useful
     double calculateRMSD(const Residue& ref_res);
 
-    //also magic
     void findInterfaceResidues(double);
     void saveInterfaceResidues(fs::path&);
+
     [[nodiscard]] std::pair<char , std::size_t> chooseRandomResidue() const;
 
 
@@ -79,21 +78,18 @@ public:
 
     void saveToPDB(fs::path&, const std::vector<std::string>&);
 
+
     //getters
     void getNumberOfResiduesPerChain();
-    std::map<char, std::vector<unsigned>> getInterfaceResidues();
+    std::map<char, std::vector<size_t>> getInterfaceResidues();
+
+    Residue getResidue(char, size_t);
     void printInterfaceResidues();
-    //std::vector<std::vector<double>> getDistMat();
-    Residue getResidue(char, unsigned);
-
-
 
     //setters
     void setResidue(const Residue&);
     void setMaxRotAngleBB(double);
     void setMaxRotAngleSCH(double);
-    //void setDistanceMatrixLocally(std::vector<std::vector<double>>& newPart, char chain, unsigned int resNum); //subsitutes part of the distance matrix. Returns a new one. We dont want to change the original one.
-
 };
 
 
