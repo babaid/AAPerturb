@@ -5,7 +5,7 @@
 #include<vector>
 #include<map>
 
-namespace amino_acids{
+namespace constants{
     namespace atoms {
         const std::vector<std::string> ALA = {"N", "CA", "C", "O", "CB"};
         const std::vector<std::string> ARG = {"N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2"};

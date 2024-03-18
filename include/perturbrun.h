@@ -6,8 +6,8 @@
 
 namespace fs = std::filesystem;
 
-void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool, double, double);
-void perturbRun(fs::path, fs::path, unsigned int, const bool, double, double);
+void createdataset(const std::string&, const std::string&, size_t, size_t, double, double);
+void perturbRun(fs::path&, fs::path&, size_t, double, double);
 
 
 

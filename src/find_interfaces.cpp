@@ -3,6 +3,8 @@
 #include "fancy.h"
 #include "threadpool.h"
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_sinks.h"
 #include<argparse/argparse.hpp>
 
 #include<string>
@@ -16,20 +18,11 @@
 //Verbose mode is currently not thread safe. I need to use mutexes or something...
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;
-bool verbose=false;
-//bool force = false;
-
-void createdataset(const std::string, const std::string, const unsigned int, const unsigned int, const bool);
-void perturbRun(fs::path, fs::path, unsigned int, const bool);
 
 
 int main(int argc, char *argv[]) {
-
-    argparse::ArgumentParser program("aaperturb", "1.2.0");
-    program.add_argument("-v", "--verbose")
-            .help("Enable verbose mode. It is useful if you want to know if something is happening.")
-            .default_value(false)
-            .implicit_value(true);
+    auto logger = spdlog::stdout_logger_mt("main");
+    argparse::ArgumentParser program("find_interfaces", "1.2.0");
     program.add_argument("-i", "--input-dir")
             .required()
             .help("The directory containing the input PDB files which we want to perturb randomly.");
@@ -46,18 +39,13 @@ int main(int argc, char *argv[]) {
         std::cerr << program;
         std::exit(1);
     }
-    if(program["-v"] == true)
-    {
-        std::cout << "Running in verbose mode." << std::endl;
-        verbose = true;
-    }
     fs::path input_dir, output_dir;
     if (auto ifn = program.present("-i"))
     {
         input_dir = *ifn;
         if(!fs::is_directory(input_dir))
         {
-            std::cout << "The directory provided does not exist. Exiting..." << std::endl;
+            spdlog::error("The directory provided does not exist. Exiting...");
             std::exit(1);
         }
     }
@@ -66,7 +54,7 @@ int main(int argc, char *argv[]) {
         output_dir = *ofn;
         if(!fs::is_directory(output_dir))
         {
-            std::cout << "The directory provided does not exist. Creating directory " << output_dir << std::endl;
+            logger->info(std::format("The directory provided does not exist. Creating directory ", output_dir.string()));
             fs::create_directory(output_dir);
         }
     }
@@ -77,7 +65,7 @@ int main(int argc, char *argv[]) {
     unsigned i{0};
     for (auto& file:files)
     {
-        if (!verbose) {
+        if (logger->level() == spdlog::level::off) {
             i++;
             Pbar.update();
             std::string msg = std::to_string(static_cast<int>( i+1 )) + '/' +
@@ -85,31 +73,29 @@ int main(int argc, char *argv[]) {
             Pbar.print(msg);
         }
 
-        if (verbose){
-            std::cout << "Opening " << file<< " for perturbation." << std::endl;
-        }
+        logger->info(std::format("Opening {} for perturbation.", file.string()));
 
         std::unique_ptr<RandomPerturbator> pert = std::make_unique<RandomPerturbator>(
-                RandomPerturbator(file, verbose));
+                RandomPerturbator(file));
 
-        if (verbose) {
-            pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
-        }
-        if (verbose) std::cout << "Looking for interface residues." << std::endl;
+
+        pert->getNumberOfResiduesPerChain(); //outputs how many residues there are in each chain.
+
+        logger->info("Looking for interface residues.");
 
         pert->findInterfaceResidues(12.0);
 
-        if (verbose) std::cout << "Saving interface residues" << std::endl;
+        logger->info("Saving interface residues.");
+
         std::string iface =  "_interfaces.json";
         std::string fname = file.stem();
         std::string fout = fname+iface;
         fs::path json_file{output_dir/fout};
         pert->saveInterfaceResidues(json_file);
-        if (verbose) {
-            pert->getInterfaceResidues();
-        }
+        pert->getInterfaceResidues();
+
     }
-    std::cout << "Dataset generation finished" << std::endl;
+    logger->info("Interface lookup finished.");
     return 0;
 }
 

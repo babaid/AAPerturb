@@ -86,7 +86,7 @@ double calculateRMSD(const std::vector<Atom>& atoms1, const std::vector<Atom>& a
 Vector3 calculateCentroid(const Residue& res)
 {
     Vector3 centroid{0., 0., 0.};
-    double num_atoms = res.atoms.size();
+    auto num_atoms = (double)res.atoms.size();
     for (const Atom& atom: res.atoms) {
         centroid+=atom.coords;
     }

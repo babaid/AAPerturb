@@ -52,10 +52,13 @@ To build it clone this project and inside the project directory:
 
 
 ```
+git submodule update --init --recursive
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX="PATH TO YOUR PREFERRED INSTALL DIR" ..
 make -jN aaperturb install 
+
 ```
 
 ## Cleaning of PDB files.

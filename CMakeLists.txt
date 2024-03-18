@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED  ON)
 set(CMAKE_CXX_STANDARD 23)
 
 include_directories(include)
+
 include(FetchContent)
 FetchContent_Declare(
         argparse
@@ -22,6 +23,15 @@ FetchContent_MakeAvailable(argparse)
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 #set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 #FetchContent_MakeAvailable(googletest)
+
+
+add_subdirectory(Submodules/spdlog)
+
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    find_package(spdlog REQUIRED)
+endif()
+
 
 
 add_executable(aaperturb
@@ -42,22 +52,6 @@ add_executable(aaperturb
         include/angles.h
 )
 
-add_executable(single_perturb
-        src/angles.cpp
-        include/angles.h
-        include/geometry.h
-        include/constants.h
-        src/geometry.cpp
-        include/IOutils.h
-        src/IOutils.cpp
-        include/molecules.h
-        src/molecules.cpp
-        include/fancy.h
-        src/fancy.cpp
-        include/perturbrun.h
-        src/perturbrun.cpp
-)
-
 add_executable(find_interfaces
         src/find_interfaces.cpp
         include/geometry.h
@@ -75,11 +69,9 @@ add_executable(find_interfaces
 
 
 
-target_link_libraries(aaperturb argparse)
-target_link_libraries(single_perturb argparse)
-target_link_libraries(find_interfaces argparse)
+target_link_libraries(aaperturb argparse spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+target_link_libraries(find_interfaces argparse spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
 
 install(TARGETS aaperturb DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(TARGETS single_perturb DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(TARGETS find_interfaces DESTINATION ${CMAKE_INSTALL_PREFIX})
