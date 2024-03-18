@@ -92,18 +92,17 @@ int main(int argc, char *argv[]) {
 
 
 
-    std::size_t num_variations = program.get<std::size_t >("-N");
-    std::size_t batch_size = program.get<std::size_t>("-b");
+    auto num_variations = program.get<std::size_t >("-N");
+    auto batch_size = program.get<std::size_t>("-b");
 
-    double BBangle = program.get<double>("--max-bbangle");
-    double SCHangle = program.get<double>("--max-schangle");
+    auto BBangle = program.get<double>("--max-bbangle");
+    auto SCHangle = program.get<double>("--max-schangle");
 
     spdlog::info(std::format("Maximal BackBone angle set to {}. Maximal SideCHain angle set to {}.", BBangle, SCHangle));
     spdlog::info("Starting dataset generation.");
 
 
     createdataset(input_dir, output_dir, num_variations, batch_size, BBangle, SCHangle);
-
 
     console->info("Dataset generation finished.");
 
