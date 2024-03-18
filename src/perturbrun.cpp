@@ -112,7 +112,7 @@ void createdataset(const std::string& inputdir, const std::string& outputdir, si
     if(console->level() == spdlog::level::off) Pbar.print("0/0");
 
     for (size_t batch_start{0}; batch_start < files.size();batch_start+=batch_size) {
-        std::this_thread::sleep_for(0.1s);
+        std::this_thread::sleep_for(0.5s);
         ///
         if(console->level() == spdlog::level::off)
         {
