@@ -24,7 +24,7 @@ double chi1() {
     // Generate random numbers from the mixture
     std::uniform_int_distribution<> choicedist(0, 2);
 
-    int choice = choicedist(mt);
+    auto choice = (size_t)choicedist(mt);
     double ang = dists[choice](mt);
     logger->info(std::format("Chosen chi1 angle: {} degrees.", ang));
     return ang;
