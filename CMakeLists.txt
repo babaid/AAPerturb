@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 
 project(AAPerturb VERSION 1.2.0)
+
+option(BUILD_TESTS "Enable building the tests" OFF)
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -fsanitize=address -O2 -Wsign-conversion -Wconversion -pedantic")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 set(CMAKE_CXX_STANDARD_REQUIRED  ON)
@@ -41,4 +43,6 @@ target_link_libraries(find_interfaces argparse spdlog::spdlog $<$<BOOL:${MINGW}>
 install(TARGETS aaperturb DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(TARGETS find_interfaces DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-add_subdirectory(unittest)
+if (BUILD_TESTS)
+    add_subdirectory(unittest)
+endif ()
