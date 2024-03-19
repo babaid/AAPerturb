@@ -15,6 +15,8 @@ enable_testing()
 
 include(GoogleTest)
 
+set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest")
+
 add_executable(
         unittest_Geometry
         source/unittests_Geometry.cpp
