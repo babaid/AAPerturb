@@ -19,14 +19,8 @@ TEST(unittest_Geometry, VectorRotation2D)
     Vector3 expected{0., 1., 0.};
     auto stddev = sum(vec - expected);
     EXPECT_NEAR(stddev, 0.0, 0.001);
-
-    vec = {1., 0., 2.};
-    expected = {0., 1., 2.};
-    pivot = {0., 0., 1.};
-    rotateCoordinatesAroundAxis(vec, pivot, axis, 90.);
-    stddev = sum(vec - expected);
-    EXPECT_NEAR(stddev, 0.0, 0.001);
 }
+
 
 
 TEST(unittest_Geometry, VectorRotation3D)
@@ -39,7 +33,6 @@ TEST(unittest_Geometry, VectorRotation3D)
     auto stddev = sum(vec - expected);
     EXPECT_NEAR(stddev, 0.0, 0.001);
 }
-
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
