@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 void perturbRun(fs::path& input_filename, fs::path& out, size_t num_perturbations, double BBangle, double SCHangle) {
     auto console = spdlog::get("main");
 
-    std::size_t  cyclecntr{0}, perturbcntr{0};
+    std::size_t  cyclecntr{number_of_files_in_directory(out)}, perturbcntr{0};
 
     if (perturbcntr<num_perturbations) {
         console->info(std::format("Opening {} for perturbation procedure.", input_filename.filename().string()));
