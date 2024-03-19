@@ -1,3 +1,6 @@
 [submodule "Submodules/spdlog"]
 	path = Submodules/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "Submodules/argparse"]
+	path = Submodules/argparse
+	url = https://github.com/p-ranav/argparse.git

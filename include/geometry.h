@@ -16,6 +16,7 @@ Vector3 pow(const Vector3, double);
 
 void operator+=(Vector3&, const Vector3&);
 void operator-=(Vector3&, const Vector3&);
+bool operator==(const Vector3& a, const Vector3& b);
 
 Vector3 operator/(const Vector3&, double);
 double sum(const Vector3&);

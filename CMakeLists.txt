@@ -16,56 +16,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(argparse)
 
-#FetchContent_Declare(
-#        googletest
-#        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-#)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-#set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-#FetchContent_MakeAvailable(googletest)
-
-
 add_subdirectory(Submodules/spdlog)
+
 
 if(NOT TARGET spdlog)
     # Stand-alone build
     find_package(spdlog REQUIRED)
 endif()
 
+file(GLOB_RECURSE SOURCES "source/*.cpp" "include/*.h")
 
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/source/find_interfaces.cpp")
 
-add_executable(aaperturb
-        include/geometry.h
-        include/constants.h
-        src/geometry.cpp
-        src/main.cpp
-        include/IOutils.h
-        src/IOutils.cpp
-        include/molecules.h
-        src/molecules.cpp
-        include/fancy.h
-        src/fancy.cpp
-        include/threadpool.h
-        include/perturbrun.h
-        src/perturbrun.cpp
-        src/angles.cpp
-        include/angles.h
-)
-
-add_executable(find_interfaces
-        src/find_interfaces.cpp
-        include/geometry.h
-        src/angles.cpp
-        include/angles.h
-        include/constants.h
-        src/geometry.cpp
-        include/IOutils.h
-        src/IOutils.cpp
-        include/molecules.h
-        src/molecules.cpp
-        src/fancy.cpp
-        include/fancy.h
-)
+add_executable(aaperturb source/main.cpp ${SOURCES})
+add_executable(find_interfaces source/find_interfaces.cpp ${SOURCES})
 
 
 
@@ -75,3 +40,5 @@ target_link_libraries(find_interfaces argparse spdlog::spdlog $<$<BOOL:${MINGW}>
 
 install(TARGETS aaperturb DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(TARGETS find_interfaces DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+add_subdirectory(unittest)

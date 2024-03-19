@@ -12,6 +12,7 @@ using Vector3 = std::array<double, 3>;
 
 // Function to rotate a vector around an arbitrary axis
 void rotateCoordinatesAroundAxis(Vector3& vector, const Vector3& p, const Vector3& axis, double angle) {
+    angle = angle * M_PI / 180.0;
     double cs = std::cos(angle);
     double si = std::sin(angle);
     double t = 1 - cs;
@@ -140,6 +141,14 @@ Vector3 operator/(const Vector3& a, double d)
     for (unsigned i{0}; i<3; i++) v[i]=a[i]/d;
     return v;
 }
+bool operator==(const Vector3& a, const Vector3& b)
+{
+    for(size_t i{0}; i<a.size(); i++)
+    {
+        if (a[i] != b[i]) return false;
+    }
+    return true;
+}
 Vector3 pow(const Vector3 a, double p)
 {
     Vector3 v;
@@ -178,3 +187,5 @@ double norm(const Vector3& vec)
 {
     return std::sqrt(sum(pow(vec, 2)));
 }
+
+
