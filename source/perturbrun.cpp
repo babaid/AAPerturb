@@ -107,7 +107,7 @@ void createdataset(const std::string& inputdir, const std::string& outputdir, si
     std::vector<std::future<void>> futures;
     std::vector<fs::path> files = findInputFiles(inputdir);
 
-    ProgressBar Pbar((int)files.size());
+    ProgressBar Pbar((int)(files.size()/ batch_size));
 
     if(console->level() == spdlog::level::off) Pbar.print("0/0");
 
