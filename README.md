@@ -1,7 +1,8 @@
 # AAPerturb
 A C++ library for the creation of a large dataset of amino acid sidechain perturbations, own PDB Parser code included and some other things related as partly described in [Pre-training of Graph Neural Network for Modeling Effects of Mutations on Protein-Protein Binding Affinity](https://arxiv.org/abs/2008.12473).
 
-This is a faster implementation of my AA-Perturbation library in C++ instead of python.
+The approach described in the paper consists of perturbing a sidechain and trying to reconstruct the original sidechain via an autoencoder.
+
 
 ## PDB Parser
 It has an own PDB parser which is mostly educational/for myself as there is probably something available that does this.
