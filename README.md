@@ -16,11 +16,11 @@ For some of the implementations refer to Biopython, rdkit, and the really useful
 
 ## Geometrical operations
 
-I would say my code is anything else than highly optimized. There are different ways to implement rotations, translations and calculations of distances for molecules.
+There are different ways to implement rotations, translations and calculations of distances for molecules.
 Although it would have been more efficient to work with matrices of atomic coordinates, this would mean to keep track of exactly how those matrices are ordered in terms of atoms and residues.
-So to keep it simple, and bookkeeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains. If someone has a more efficient idea please contact me.
+So to keep it simple, and bookkeeping reasons I decided to work with single coordinates of the atoms. Each split into residues and chains.
 
-Rotating around bonds is a well described [problem](https://sites.google.com/site/glennmurray/glenn-murray-ph-d/rotation-matrices-and-formulas/rotation-about-an-arbitrary-axis-in-3-dimensions), for which you have to implement this confusing rotation matrix, otherwise it won't work.
+Rotating around bonds is a well described [problem](https://sites.google.com/site/glennmurray/glenn-murray-ph-d/rotation-matrices-and-formulas/rotation-about-an-arbitrary-axis-in-3-dimensions), for which you have to use the rotation matrix found at the previous link.
 
 ## Random Perturbations
 
@@ -87,18 +87,14 @@ You have to provide an input directory (where the cleaned PDB's are at), and an 
 
 #### Note 1
 
-Of course you may want the perturbations to be "realistic" like the mentioned paper did. I gotta tell, they took a shurtcut and used FoldX (which uses the Dunbrack rotamers) to mutate/perturb residues as it seems. Given you have the torsion angle distributions from the Dunbrack library you can straightforwardly use them instead the uniform distribution that I did. 
+Of course you may want the perturbations to be "realistic" like the mentioned paper did. They took a shurtcut and used FoldX (which uses the Dunbrack rotamers) to mutate/perturb residues as it seems. Given you have the torsion angle distributions from the Dunbrack library you can straightforwardly use them instead the uniform distribution that I did. Currently I use the appropriate experimental Chi1 and Chi2 angles, but for the other torsions I use an approximation of small perturbations.
 
 Of course this means that you have to be more careful about clashes, and also introduce some other stuff into the code.
 
 #### Note 2
 
-No one has actually tested if small perturbations work as well as the rotamers, which I am working on currently using a structural autoencoder. Stay tuned for more!
+No one has actually tested if small perturbations work as well as the rotamers, which I am working on currently using a structural autoencoder.
 
-
-### Contribute
-
-Interesting would be if someone found the time to implement the dunbrack stuff I mentioned for now.
 
 
 
